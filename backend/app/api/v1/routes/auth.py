@@ -1,7 +1,7 @@
 import uuid
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel, EmailStr
-from app.services.dynamodb import create_user, get_user_by_email, get_user_by_username
+from app.infrastructure.dynamodb import create_user, get_user_by_email, get_user_by_username
 from app.core.security import hash_password, verify_password, create_access_token
 
 router = APIRouter(prefix="/auth", tags=["auth"])
