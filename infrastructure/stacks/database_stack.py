@@ -7,19 +7,25 @@ class DatabaseStack(Stack):
         super().__init__(scope, construct_id, **kwargs)
 
         # Single DynamoDB table for all data (users, posts, likes, follows)
-        # PK = partition key, SK = sort key
         self.table = dynamodb.Table(
             self, "PixoraTable",
             table_name="pixora-main",
             partition_key=dynamodb.Attribute(name="PK", type=dynamodb.AttributeType.STRING),
             sort_key=dynamodb.Attribute(name="SK", type=dynamodb.AttributeType.STRING),
-            billing_mode=dynamodb.BillingMode.PAY_PER_REQUEST,  # pay per request, no capacity planning
-            removal_policy=RemovalPolicy.DESTROY,  # delete table when stack is destroyed (dev only)
+            billing_mode=dynamodb.BillingMode.PAY_PER_REQUEST,
+            removal_policy=RemovalPolicy.DESTROY,
         )
 
-        # Secondary index to query users by username
+        # GSI1 — query by username
         self.table.add_global_secondary_index(
             index_name="GSI1",
             partition_key=dynamodb.Attribute(name="GSI1PK", type=dynamodb.AttributeType.STRING),
             sort_key=dynamodb.Attribute(name="GSI1SK", type=dynamodb.AttributeType.STRING),
+        )
+
+        # GSI2 — query by email
+        self.table.add_global_secondary_index(
+            index_name="GSI2",
+            partition_key=dynamodb.Attribute(name="GSI2PK", type=dynamodb.AttributeType.STRING),
+            sort_key=dynamodb.Attribute(name="GSI2SK", type=dynamodb.AttributeType.STRING),
         )

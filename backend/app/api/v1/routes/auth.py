@@ -1,64 +1,30 @@
-import uuid
-from fastapi import APIRouter, HTTPException
-from pydantic import BaseModel, EmailStr
-from app.infrastructure.dynamodb import create_user, get_user_by_email, get_user_by_username
-from app.core.security import hash_password, verify_password, create_access_token
+from fastapi import APIRouter, Depends
+from app.modules.auth import service as auth_service
+from app.modules.auth.schemas import (
+    RegisterRequest,
+    LoginRequest,
+    RegisterResponse,
+    LoginResponse,
+    MeResponse,
+)
+from app.core.dependencies import get_current_user
 
-router = APIRouter(prefix="/auth", tags=["auth"])
-
-
-class RegisterRequest(BaseModel):
-    username: str
-    email: EmailStr
-    password: str
-
-
-class LoginRequest(BaseModel):
-    email: EmailStr
-    password: str
+router = APIRouter()
 
 
-@router.post("/register")
-async def register(body: RegisterRequest):
-    # Email kullanımda mı?
-    if get_user_by_email(body.email):
-        raise HTTPException(status_code=409, detail="Email already registered")
-
-    # Username kullanımda mı?
-    if get_user_by_username(body.username):
-        raise HTTPException(status_code=409, detail="Username already taken")
-
-    user_id = str(uuid.uuid4())
-
-    create_user(
-        user_id=user_id,
-        username=body.username,
-        email=body.email,
-        password_hash=hash_password(body.password),
-    )
-
-    token = create_access_token(user_id)
-
-    return {
-        "user_id":      user_id,
-        "username":     body.username,
-        "access_token": token,
-        "token_type":   "bearer",
-    }
+@router.post("/register", response_model=RegisterResponse, status_code=201)
+def register(body: RegisterRequest):
+    """Register a new user and return access token."""
+    return auth_service.register(body)
 
 
-@router.post("/login")
-async def login(body: LoginRequest):
-    user = get_user_by_email(body.email)
+@router.post("/login", response_model=LoginResponse)
+def login(body: LoginRequest):
+    """Login with email and password, returns access token."""
+    return auth_service.login(body)
 
-    if not user or not verify_password(body.password, user["password"]):
-        raise HTTPException(status_code=401, detail="Invalid email or password")
 
-    token = create_access_token(user["user_id"])
-
-    return {
-        "user_id":      user["user_id"],
-        "username":     user["username"],
-        "access_token": token,
-        "token_type":   "bearer",
-    }
+@router.get("/me", response_model=MeResponse)
+def me(current_user_id: str = Depends(get_current_user)):
+    """Get current authenticated user's profile."""
+    return auth_service.get_me(current_user_id)
