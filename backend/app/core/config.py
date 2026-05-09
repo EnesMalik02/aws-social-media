@@ -19,7 +19,7 @@ class Settings(BaseSettings):
     DYNAMODB_TABLE: str = "pixora-main"
     S3_BUCKET: str = "pixora-media-675715936315"
     
-    class Config:
+    class ConfigDict:
         env_file = ".env"
 
 settings = Settings()
