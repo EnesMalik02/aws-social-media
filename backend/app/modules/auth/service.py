@@ -86,3 +86,9 @@ def get_me(user_id: str) -> MeResponse:
         bio=user.get("bio"),
         avatar=user.get("avatar"),
     )
+
+def refresh_token(user_id: str) -> TokenResponse:
+    return TokenResponse(
+        access_token=create_access_token(user_id),
+        refresh_token=create_refresh_token(user_id),
+    )

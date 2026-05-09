@@ -7,7 +7,7 @@ from app.modules.auth.schemas import (
     LoginResponse,
     MeResponse,
 )
-from app.core.dependencies import get_current_user
+from app.core.dependencies import get_current_user, validate_token
 
 router = APIRouter()
 
@@ -28,3 +28,9 @@ def login(body: LoginRequest):
 def me(current_user_id: str = Depends(get_current_user)):
     """Get current authenticated user's profile."""
     return auth_service.get_me(current_user_id)
+
+
+@router.get("/refresh")
+def refresh(user_id: str = Depends(validate_token)):
+    return auth_service.refresh_token(user_id)
+
