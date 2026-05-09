@@ -49,9 +49,9 @@ class ComputeStack(Stack):
             self, "PixoraService",
             cluster=self.cluster,
             service_name="pixora-backend-service",
-            cpu=256,            # 0.25 vCPU
+            cpu=256,
             memory_limit_mib=512,
-            desired_count=1,    # run 1 container
+            desired_count=1,
             assign_public_ip=True,
             task_image_options=ecs_patterns.ApplicationLoadBalancedTaskImageOptions(
                 image=ecs.ContainerImage.from_ecr_repository(self.repository, tag="latest"),
@@ -65,8 +65,17 @@ class ComputeStack(Stack):
                 },
                 log_driver=ecs.LogDrivers.aws_logs(
                     stream_prefix="pixora",
-                    log_retention=logs.RetentionDays.ONE_DAY,  # keep logs for 1 week
+                    log_retention=logs.RetentionDays.ONE_DAY,
                 ),
             ),
             public_load_balancer=True,
+        )
+
+        # Tell ALB to use /health endpoint for health checks
+        # ALB periodically checks the container if it's healty
+        # so it needs an endpoint to check image statsus.
+        # Because of this we used /health endpoint to tell ALB how to check image status.
+        self.fargate_service.target_group.configure_health_check(
+            path="/health",
+            healthy_http_codes="200",
         )
