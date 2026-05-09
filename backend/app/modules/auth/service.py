@@ -25,8 +25,8 @@ def _build_user_response(user: dict) -> UserResponse:
         user_id=user["user_id"],
         username=user["username"],
         email=user["email"],
-        bio=user.get("bio", ""),
-        avatar=user.get("avatar", ""),
+        bio=user.get("bio"),
+        avatar=user.get("avatar"),
     )
 
 
@@ -77,6 +77,6 @@ def get_me(user_id: str) -> MeResponse:
         user_id=user["user_id"],
         username=user["username"],
         email=user["email"],
-        bio=user.get("bio", ""),
-        avatar=user.get("avatar", ""),
+        bio=user.get("bio"),
+        avatar=user.get("avatar"),
     )

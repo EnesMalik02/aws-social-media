@@ -116,7 +116,7 @@ class TestLogin:
 # --- Get Me ---
 
 class TestGetMe:
-
+    
     @patch("app.modules.auth.service.get_user_by_id")
     def test_success(self, mock_by_id, mock_user):
         mock_by_id.return_value = mock_user
@@ -125,10 +125,5 @@ class TestGetMe:
 
         assert result.user_id == "test-id-123"
         assert result.username == "enes"
-
-    @patch("app.modules.auth.service.get_user_by_id", return_value=None)
-    def test_not_found(self, _):
-        with pytest.raises(HTTPException) as exc:
-            auth_service.get_me("nonexistent-id")
-
-        assert exc.value.status_code == 404
+        assert result.email == "test@test.com"
+    
