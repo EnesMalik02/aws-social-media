@@ -1,20 +1,33 @@
+# This section defines the different containers (services) that make up your application.
 services:
-  api:
-    build:
+
+  api: # Custom service name, you can name it whatever you want.
+
+    build: # This key instructs Docker to build a new image from the specified local directory and Dockerfile.
       context: .
       dockerfile: Dockerfile
-    ports:
+    
+    ports: # This maps the host machine's port to the container's port, allowing external access to the app.
       - "8000:8000"
+
+    # This key is used to load environment variables from the local .env file into the container.
     env_file:
       - .env
+
+    # This command overrides the default CMD in the Dockerfile to run the application.
     command: uv run uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
 
     develop:
+
+     # This key is used to watch for file content changes. If a change occurs, it triggers the assigned action.
       watch:
-        - path: ./pyproject.toml
+
+        - path: ./pyproject.toml # This file is located in our local root directory, not inside the Docker container.
           action: rebuild
+        
         - path: ./uv.lock
           action: rebuild
-        - path: ./app
-          target: /app/app
+        
+        - path: ./app # This file is located in our local root directory, not inside the Docker container.
+          target: /app/app # This specifies the target directory path inside the Docker container.
           action: sync
