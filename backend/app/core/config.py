@@ -5,6 +5,10 @@ class Settings(BaseSettings):
     APP_NAME: str = "Pixora"
     DEBUG: bool = False
     
+    # AWS Credentials
+    AWS_ACCESS_KEY_ID: str = ""
+    AWS_SECRET_ACCESS_KEY: str = ""
+
     # JWT
     JWT_SECRET: str = "dev-secret-change-in-production"
     JWT_ALGORITHM: str = "HS256"
