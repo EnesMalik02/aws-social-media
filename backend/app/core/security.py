@@ -2,6 +2,7 @@ from datetime import datetime, timedelta, timezone
 from jose import jwt, JWTError
 from passlib.context import CryptContext
 from app.core.config import settings
+from uuid import uuid4
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
@@ -16,6 +17,18 @@ def create_access_token(user_id: str) -> str:
     payload = {
         "sub": user_id,
         "exp": expire,
+        "iat": datetime.now(timezone.utc)
+    }
+    return jwt.encode(payload, settings.JWT_SECRET, algorithm=settings.JWT_ALGORITHM)
+
+def create_refresh_token(user_id: str) -> str:
+    expire = datetime.now(timezone.utc) + timedelta(minutes=settings.JWT_EXPIRE_MINUTES)
+    payload = {
+        "sub": user_id,
+        "jti": str(uuid4()),                   # unique identifier (jti) used to blacklist this refresh token if revoked
+        "exp": expire,                    # expire date
+        "iat": datetime.now(timezone.utc) # creation date
+
     }
     return jwt.encode(payload, settings.JWT_SECRET, algorithm=settings.JWT_ALGORITHM)
 

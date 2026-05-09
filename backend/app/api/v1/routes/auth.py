@@ -14,13 +14,13 @@ router = APIRouter()
 
 @router.post("/register", response_model=RegisterResponse, status_code=201)
 def register(body: RegisterRequest):
-    """Register a new user and return access token."""
+    """Register a new user and return access and refresh token."""
     return auth_service.register(body)
 
 
 @router.post("/login", response_model=LoginResponse)
 def login(body: LoginRequest):
-    """Login with email and password, returns access token."""
+    """Login with email and password, returns access and refresh token."""
     return auth_service.login(body)
 
 

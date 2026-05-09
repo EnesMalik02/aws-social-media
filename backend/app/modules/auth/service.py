@@ -1,7 +1,7 @@
 import uuid
 from fastapi import HTTPException
 
-from app.core.security import hash_password, verify_password, create_access_token
+from app.core.security import hash_password, verify_password, create_access_token, create_refresh_token
 from app.infrastructure.repositories.user_repository import (
     create_user,
     get_user_by_email,
@@ -50,7 +50,10 @@ def register(body: RegisterRequest) -> RegisterResponse:
 
     return RegisterResponse(
         user=_build_user_response(user),
-        token=TokenResponse(access_token=create_access_token(user_id)),
+        token=TokenResponse(
+            access_token=create_access_token(user_id),
+            refresh_token=create_refresh_token(user_id),
+        ),
     )
 
 
@@ -63,7 +66,10 @@ def login(body: LoginRequest) -> LoginResponse:
 
     return LoginResponse(
         user=_build_user_response(user),
-        token=TokenResponse(access_token=create_access_token(user["user_id"])),
+        token=TokenResponse(
+            access_token=create_access_token(user["user_id"]),
+            refresh_token=create_refresh_token(user["user_id"]),
+            ),
     )
 
 
