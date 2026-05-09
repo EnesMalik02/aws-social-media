@@ -2,7 +2,7 @@ import uuid
 from fastapi import HTTPException
 
 from app.core.security import hash_password, verify_password, create_access_token
-from app.infrastructure.dynamodb import (
+from app.infrastructure.repositories.user_repository import (
     create_user,
     get_user_by_email,
     get_user_by_username,
