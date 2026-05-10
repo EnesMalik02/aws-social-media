@@ -4,10 +4,7 @@ from fastapi import HTTPException
 from typing import Optional
 
 from app.graphql.types.user import UserType
-from app.infrastructure.repositories.user_repository import (
-    get_user_by_username,
-    update_user,
-)
+from app.infrastructure.dynamodb import user_repo
 
 
 @strawberry.input
@@ -28,7 +25,7 @@ def resolve_update_profile(info: Info, input: UpdateProfileInput) -> UserType:
     fields = {}
     if input.username is not None:
         # Check if username already taken by someone else
-        existing = get_user_by_username(input.username)
+        existing = user_repo.get_user_by_username(input.username)
         if existing and existing["user_id"] != user_id:
             raise HTTPException(status_code=409, detail="Username already taken")
         fields["username"] = input.username.lower()
@@ -42,7 +39,7 @@ def resolve_update_profile(info: Info, input: UpdateProfileInput) -> UserType:
     if not fields:
         raise HTTPException(status_code=400, detail="No fields to update")
 
-    updated = update_user(user_id, fields)
+    updated = user_repo.update_user(user_id, fields)
 
     return UserType(
         user_id=updated["user_id"],

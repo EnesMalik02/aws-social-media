@@ -2,12 +2,7 @@ import uuid
 from fastapi import HTTPException
 
 from app.core.security import hash_password, verify_password, create_access_token, create_refresh_token
-from app.infrastructure.repositories.user_repository import (
-    create_user,
-    get_user_by_email,
-    get_user_by_username,
-    get_user_by_id,
-)
+from app.infrastructure.dynamodb import user_repo
 from app.modules.auth.schemas import (
     RegisterRequest,
     LoginRequest,
@@ -32,16 +27,16 @@ def _build_user_response(user: dict) -> UserResponse:
 
 def register(body: RegisterRequest) -> RegisterResponse:
     # Check if email already exists
-    if get_user_by_email(body.email):
+    if user_repo.get_user_by_email(body.email):
         raise HTTPException(status_code=409, detail="Email already registered")
 
     # Check if username already taken
-    if get_user_by_username(body.username):
+    if user_repo.get_user_by_username(body.username):
         raise HTTPException(status_code=409, detail="Username already taken")
 
     user_id = str(uuid.uuid4())
 
-    user = create_user(
+    user = user_repo.create_user(
         user_id=user_id,
         username=body.username,
         email=body.email,
@@ -58,7 +53,7 @@ def register(body: RegisterRequest) -> RegisterResponse:
 
 
 def login(body: LoginRequest) -> LoginResponse:
-    user = get_user_by_email(body.email)
+    user = user_repo.get_user_by_email(body.email)
 
     # Return same error for wrong email or wrong password — prevents user enumeration
     if not user or not verify_password(body.password, user["password"]):
@@ -74,7 +69,7 @@ def login(body: LoginRequest) -> LoginResponse:
 
 
 def get_me(user_id: str) -> MeResponse:
-    user = get_user_by_id(user_id)
+    user = user_repo.get_user_by_id(user_id)
 
     if not user:
         raise HTTPException(status_code=404, detail="User not found")

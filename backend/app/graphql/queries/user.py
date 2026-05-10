@@ -3,7 +3,7 @@ from strawberry.types import Info
 from fastapi import HTTPException
 
 from app.graphql.types.user import UserType
-from app.infrastructure.repositories.user_repository import get_user_by_id
+from app.infrastructure.dynamodb import user_repo
 
 
 def resolve_me(info: Info) -> UserType:
@@ -17,7 +17,7 @@ def resolve_me(info: Info) -> UserType:
     if not user_id:
         raise HTTPException(status_code=401, detail="Unauthorized")
 
-    user = get_user_by_id(user_id)
+    user = user_repo.get_user_by_id(user_id)
 
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
@@ -31,7 +31,7 @@ def resolve_me(info: Info) -> UserType:
     )
 
 def resolve_user(id: str) -> UserType:
-    user = get_user_by_id(id)
+    user = user_repo.get_user_by_id(id)
 
     if not user:
         raise HTTPException(status_code=404, detail="User Not Found")
