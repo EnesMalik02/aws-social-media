@@ -12,7 +12,7 @@ class Settings(BaseSettings):
     # JWT
     JWT_SECRET: str = "dev-secret-change-in-production"
     JWT_ALGORITHM: str = "HS256"
-    JWT_EXPIRE_MINUTES: int = 60 * 24  # 1 gün
+    JWT_EXPIRE_MINUTES: int = 60 * 24* 60  # 1 gün
     
     # AWS
     AWS_REGION: str = "eu-central-1"
