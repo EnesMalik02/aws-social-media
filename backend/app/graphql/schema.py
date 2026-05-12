@@ -1,24 +1,30 @@
 import strawberry
 from strawberry.fastapi import GraphQLRouter
 from fastapi import Request
+from typing import List
 
-from app.graphql.queries.user import resolve_me, resolve_user
-from app.graphql.mutations.user import resolve_update_profile
+from app.graphql.queries.user import resolve_me
+from app.graphql.queries.post import resolve_post, resolve_user_posts, resolve_post_comments
+from app.graphql.mutations.user import resolve_update_profile, UpdateProfileInput
 from app.graphql.types.user import UserType
+from app.graphql.types.post import PostType, CommentType
 
 
 @strawberry.type
 class Query:
     me: UserType = strawberry.field(resolver=resolve_me)
-    
-    user: UserType = strawberry.field(resolver=resolve_user)
+
+    post: PostType = strawberry.field(resolver=resolve_post)
+
+    user_posts: List[PostType] = strawberry.field(resolver=resolve_user_posts)
+
+    post_comments: List[CommentType] = strawberry.field(resolver=resolve_post_comments)
+
 
 @strawberry.type
 class Mutation:
-    update_profile: UserType = strawberry.mutation(
-        resolver=resolve_update_profile,
-        permission_classes=[]
-        )
+    update_profile: UserType = strawberry.mutation(resolver=resolve_update_profile)
+
 
 schema = strawberry.Schema(query=Query, mutation=Mutation)
 

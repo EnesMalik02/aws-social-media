@@ -16,4 +16,11 @@ class StorageStack(Stack):
                 allowed_origins=["*"],  # restrict to your domain in production
                 allowed_headers=["*"],
             )],
+            block_public_access=s3.BlockPublicAccess(
+                block_public_acls=False,
+                block_public_policy=False,
+                ignore_public_acls=False,
+                restrict_public_buckets=False,
+            ),
+            public_read_access=True,
         )

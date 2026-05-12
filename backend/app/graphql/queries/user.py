@@ -1,4 +1,3 @@
-from pydantic import HttpUrl
 from strawberry.types import Info
 from fastapi import HTTPException
 
