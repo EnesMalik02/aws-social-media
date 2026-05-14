@@ -31,9 +31,16 @@ schema = strawberry.Schema(query=Query, mutation=Mutation)
 
 async def get_context(request: Request) -> dict:
     from app.core.security import decode_token
+    from app.infrastructure.dynamodb import user_repo, post_repo
+
     token = request.headers.get("Authorization", "").replace("Bearer ", "")
     user_id = decode_token(token) if token else None
-    return {"user_id": user_id}
+
+    return {
+        "user_id":   user_id,
+        "user_repo": user_repo,
+        "post_repo": post_repo,
+    }
 
 
 def get_graphql_router() -> GraphQLRouter:

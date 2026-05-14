@@ -62,12 +62,3 @@ class Keys:
             "SK": f"COMMENT#{created_at}#{comment_id}",
         }
 
-    # ── Follow ────────────────────────────────────────────────────────
-
-    @staticmethod
-    def follow(follower_id: str, following_id: str) -> dict:
-        """Key for a follow relationship."""
-        return {
-            "PK": f"USER#{follower_id}",
-            "SK": f"FOLLOW#{following_id}",
-        }

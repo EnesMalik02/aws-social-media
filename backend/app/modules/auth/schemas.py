@@ -58,9 +58,4 @@ class LoginResponse(BaseModel):
     token: TokenResponse
 
 
-class MeResponse(BaseModel):
-    user_id:  str
-    username: str
-    email:    str
-    bio:      str = ""
-    avatar:   str = ""
+MeResponse = UserResponse

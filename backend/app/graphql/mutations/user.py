@@ -4,27 +4,24 @@ from fastapi import HTTPException
 from typing import Optional
 
 from app.graphql.types.user import UserType
-from app.infrastructure.dynamodb import user_repo
 
 
 @strawberry.input
 class UpdateProfileInput:
-    """Fields the user can update. All optional — only send what changed."""
     username: Optional[str] = None
     bio:      Optional[str] = None
     avatar:   Optional[str] = None
 
 
 def resolve_update_profile(info: Info, input: UpdateProfileInput) -> UserType:
-    user_id = info.context.get("user_id")
+    user_id   = info.context.get("user_id")
+    user_repo = info.context["user_repo"]
 
     if not user_id:
         raise HTTPException(status_code=401, detail="Unauthorized")
 
-    # Build only changed fields
     fields = {}
     if input.username is not None:
-        # Check if username already taken by someone else
         existing = user_repo.get_user_by_username(input.username)
         if existing and existing["user_id"] != user_id:
             raise HTTPException(status_code=409, detail="Username already taken")

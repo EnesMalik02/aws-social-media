@@ -1,16 +1,18 @@
 import pytest
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
 from fastapi import HTTPException
 
 from app.modules.auth.schemas import RegisterRequest, LoginRequest
-from app.modules.auth import service as auth_service
+from app.modules.auth.service import AuthService
 
 
-# --- Fixtures ---
+@pytest.fixture
+def mock_repo():
+    return MagicMock()
+
 
 @pytest.fixture
 def mock_user():
-    """Fake user as it would come from DynamoDB."""
     return {
         "user_id":  "test-id-123",
         "username": "enes",
@@ -21,76 +23,84 @@ def mock_user():
     }
 
 
+@pytest.fixture
+def service(mock_repo):
+    return AuthService(user_repo=mock_repo)
+
+
 # --- Register ---
 
 class TestRegister:
 
-    @patch("app.modules.auth.service.get_user_by_email", return_value=None)
-    @patch("app.modules.auth.service.get_user_by_username", return_value=None)
-    @patch("app.modules.auth.service.create_user")
-    @patch("app.modules.auth.service.hash_password", return_value="hashed")
-    @patch("app.modules.auth.service.create_access_token", return_value="token")
-    def test_success(self, _, __, mock_create, ___, ____, mock_user):
-        mock_create.return_value = mock_user
+    def test_success(self, service, mock_repo, mock_user):
+        mock_repo.get_user_by_email.return_value = None
+        mock_repo.get_user_by_username.return_value = None
+        mock_repo.create_user.return_value = mock_user
 
-        result = auth_service.register(RegisterRequest(
-            username="enes",
-            email="test@test.com",
-            password="Test1234",
-        ))
+        with patch("app.modules.auth.service.hash_password", return_value="hashed"), \
+             patch("app.modules.auth.service.create_access_token", return_value="access"), \
+             patch("app.modules.auth.service.create_refresh_token", return_value="refresh"):
+
+            result = service.register(RegisterRequest(
+                username="enes",
+                email="test@test.com",
+                password="Test1234",
+            ))
 
         assert result.user.username == "enes"
-        assert result.token.access_token == "token"
+        assert result.token.access_token == "access"
 
-    @patch("app.modules.auth.service.get_user_by_email")
-    def test_email_taken(self, mock_by_email, mock_user):
-        mock_by_email.return_value = mock_user
+    def test_email_taken(self, service, mock_repo, mock_user):
+        mock_repo.get_user_by_email.return_value = mock_user
 
         with pytest.raises(HTTPException) as exc:
-            auth_service.register(RegisterRequest(
+            service.register(RegisterRequest(
                 username="enes",
                 email="test@test.com",
                 password="Test1234",
             ))
 
         assert exc.value.status_code == 409
+        assert exc.value.detail == "Email already registered"
 
-    @patch("app.modules.auth.service.get_user_by_email", return_value=None)
-    @patch("app.modules.auth.service.get_user_by_username")
-    def test_username_taken(self, mock_by_username, _, mock_user):
-        mock_by_username.return_value = mock_user
+    def test_username_taken(self, service, mock_repo, mock_user):
+        mock_repo.get_user_by_email.return_value = None
+        mock_repo.get_user_by_username.return_value = mock_user
 
         with pytest.raises(HTTPException) as exc:
-            auth_service.register(RegisterRequest(
+            service.register(RegisterRequest(
                 username="enes",
                 email="test@test.com",
                 password="Test1234",
             ))
 
         assert exc.value.status_code == 409
+        assert exc.value.detail == "Username already taken"
 
 
 # --- Login ---
 
 class TestLogin:
 
-    @patch("app.modules.auth.service.get_user_by_email")
-    @patch("app.modules.auth.service.verify_password", return_value=True)
-    @patch("app.modules.auth.service.create_access_token", return_value="token")
-    def test_success(self, _, __, mock_by_email, mock_user):
-        mock_by_email.return_value = mock_user
+    def test_success(self, service, mock_repo, mock_user):
+        mock_repo.get_user_by_email.return_value = mock_user
 
-        result = auth_service.login(LoginRequest(
-            email="test@test.com",
-            password="Test1234",
-        ))
+        with patch("app.modules.auth.service.verify_password", return_value=True), \
+             patch("app.modules.auth.service.create_access_token", return_value="access"), \
+             patch("app.modules.auth.service.create_refresh_token", return_value="refresh"):
 
-        assert result.token.access_token == "token"
+            result = service.login(LoginRequest(
+                email="test@test.com",
+                password="Test1234",
+            ))
 
-    @patch("app.modules.auth.service.get_user_by_email", return_value=None)
-    def test_wrong_email(self, _):
+        assert result.token.access_token == "access"
+
+    def test_wrong_email(self, service, mock_repo):
+        mock_repo.get_user_by_email.return_value = None
+
         with pytest.raises(HTTPException) as exc:
-            auth_service.login(LoginRequest(
+            service.login(LoginRequest(
                 email="wrong@test.com",
                 password="Test1234",
             ))
@@ -98,16 +108,15 @@ class TestLogin:
         assert exc.value.status_code == 401
         assert exc.value.detail == "Invalid email or password"
 
-    @patch("app.modules.auth.service.get_user_by_email")
-    @patch("app.modules.auth.service.verify_password", return_value=False)
-    def test_wrong_password(self, _, mock_by_email, mock_user):
-        mock_by_email.return_value = mock_user
+    def test_wrong_password(self, service, mock_repo, mock_user):
+        mock_repo.get_user_by_email.return_value = mock_user
 
-        with pytest.raises(HTTPException) as exc:
-            auth_service.login(LoginRequest(
-                email="test@test.com",
-                password="WrongPass",
-            ))
+        with patch("app.modules.auth.service.verify_password", return_value=False):
+            with pytest.raises(HTTPException) as exc:
+                service.login(LoginRequest(
+                    email="test@test.com",
+                    password="WrongPass",
+                ))
 
         assert exc.value.status_code == 401
         assert exc.value.detail == "Invalid email or password"
@@ -116,14 +125,23 @@ class TestLogin:
 # --- Get Me ---
 
 class TestGetMe:
-    
-    @patch("app.modules.auth.service.get_user_by_id")
-    def test_success(self, mock_by_id, mock_user):
-        mock_by_id.return_value = mock_user
 
-        result = auth_service.get_me("test-id-123")
+    def test_success(self, service, mock_repo, mock_user):
+        mock_repo.get_user_by_id.return_value = mock_user
+
+        result = service.get_me("test-id-123")
 
         assert result.user_id == "test-id-123"
         assert result.username == "enes"
         assert result.email == "test@test.com"
-    
+
+    def test_not_found(self, service, mock_repo):
+        mock_repo.get_user_by_id.return_value = None
+
+        with pytest.raises(HTTPException) as exc:
+            service.get_me("nonexistent-id")
+
+        assert exc.value.status_code == 404
+
+
+# TODO: TestRefreshToken
