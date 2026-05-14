@@ -54,6 +54,9 @@ class TestGetPost:
         result = service.get_post("5b533acd-ace4-4455-b10a-a39817942182")
 
         assert result.post_id == "5b533acd-ace4-4455-b10a-a39817942182"
+        assert result.user_id == "acd75b16-592a-4982-b58e-c70d0619ded2"
+        assert result.caption == "ilk post"
+        assert result.image_url == "https://pixora-media-675715936315.s3.eu-central-1.amazonaws.com/posts/test.jpeg"
 
     def test_not_found(self, service, mock_repo):
         mock_repo.get_post_by_id.return_value = None
