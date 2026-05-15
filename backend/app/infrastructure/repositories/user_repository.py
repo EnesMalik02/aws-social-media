@@ -17,6 +17,8 @@ class UserRepository:
             "password": password_hash,
             "bio":      "",
             "avatar":   "",
+            "followers_count": 0,
+            "following_count":  0,
         }
         self.table.put_item(Item=item)
         return clean(item)

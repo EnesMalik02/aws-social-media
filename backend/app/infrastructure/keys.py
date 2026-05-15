@@ -62,3 +62,18 @@ class Keys:
             "SK": f"COMMENT#{created_at}#{comment_id}",
         }
 
+    @staticmethod
+    def following(follower_id: str, following_id: str) -> dict:
+        """Key for 'follower_id follows following_id' record."""
+        return {
+            "PK": f"USER#{follower_id}",
+            "SK": f"FOLLOWING#{following_id}",
+        }
+
+    @staticmethod
+    def follower(following_id: str, follower_id: str) -> dict:
+        """Key for reverse index — who follows following_id."""
+        return {
+            "PK": f"USER#{following_id}",
+            "SK": f"FOLLOWER#{follower_id}",
+        }
