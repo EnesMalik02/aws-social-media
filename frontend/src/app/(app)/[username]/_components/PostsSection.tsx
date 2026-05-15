@@ -2,11 +2,12 @@
 
 import { motion } from "framer-motion";
 import ProfilePostGrid from "@/components/ProfilePostGrid";
-import type { Post } from "@/lib/posts";
+import type { Post } from "@/entities/post/model/types";
 
 interface Props {
   posts: Post[];
   currentUserId: string;
+  ownerUsername: string;
 }
 
 function GridIcon() {
@@ -18,7 +19,7 @@ function GridIcon() {
   );
 }
 
-export default function PostsSection({ posts, currentUserId }: Props) {
+export default function PostsSection({ posts, currentUserId, ownerUsername }: Props) {
   return (
     <>
       <motion.div
@@ -36,7 +37,11 @@ export default function PostsSection({ posts, currentUserId }: Props) {
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.15, duration: 0.3 }}
       >
-        <ProfilePostGrid posts={posts} currentUserId={currentUserId} />
+        <ProfilePostGrid
+          posts={posts}
+          currentUserId={currentUserId}
+          ownerUsername={ownerUsername}
+        />
       </motion.div>
     </>
   );

@@ -1,13 +1,8 @@
-import { create } from "zustand";
-import { api } from "@/lib/api";
+"use client";
 
-interface User {
-  user_id: string;
-  username: string;
-  email: string;
-  bio?: string;
-  avatar?: string;
-}
+import { create } from "zustand";
+import { apiClient } from "@/shared/api/client";
+import type { User } from "../model/types";
 
 interface AuthState {
   user: User | null;
@@ -29,7 +24,7 @@ export const useAuthStore = create<AuthState>((set) => ({
   fetchMe: async () => {
     set({ loading: true });
     try {
-      const { data } = await api.get("/v1/auth/me");
+      const { data } = await apiClient.get("/v1/auth/me");
       set({ user: data });
     } catch {
       set({ user: null });

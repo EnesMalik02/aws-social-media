@@ -1,4 +1,4 @@
-import type { UserProfile } from "@/lib/graphql";
+import type { UserProfile } from "@/entities/user/model/types";
 
 interface Props {
   profile: UserProfile;

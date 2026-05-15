@@ -2,7 +2,7 @@ import { RefObject } from "react";
 
 interface Props {
   preview: string | null;
-  fileRef: RefObject<HTMLInputElement>;
+  fileRef: RefObject<HTMLInputElement | null>;
   onClear: () => void;
   onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
 }

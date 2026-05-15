@@ -2,20 +2,20 @@
 
 import { useRef, useState } from "react";
 import { motion } from "framer-motion";
-import { getUploadUrl, uploadToS3, createPost } from "@/lib/posts";
-import { usePostsStore } from "@/store/posts";
+import { useAuthStore } from "@/entities/user/store/authStore";
+import { useCreatePostMutation } from "@/entities/post/queries";
 
 interface Props {
   onClose: () => void;
 }
 
 export default function CreatePost({ onClose }: Props) {
-  const { addPost } = usePostsStore();
+  const { user } = useAuthStore();
+  const createMutation = useCreatePostMutation(user?.user_id);
   const fileRef = useRef<HTMLInputElement>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [file, setFile] = useState<File | null>(null);
   const [caption, setCaption] = useState("");
-  const [uploading, setUploading] = useState(false);
   const [step, setStep] = useState<"pick" | "caption">("pick");
 
   function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
@@ -28,18 +28,8 @@ export default function CreatePost({ onClose }: Props) {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!file || !caption.trim() || uploading) return;
-    setUploading(true);
-    try {
-      const { upload_url, image_url } = await getUploadUrl(file.name);
-      await uploadToS3(upload_url, file);
-      const post = await createPost(caption.trim(), image_url);
-      addPost(post);
-      onClose();
-    } catch (err) {
-      console.error(err);
-      setUploading(false);
-    }
+    if (!file || !caption.trim() || createMutation.isPending) return;
+    createMutation.mutate({ file, caption: caption.trim() }, { onSuccess: onClose });
   }
 
   return (
@@ -64,7 +54,6 @@ export default function CreatePost({ onClose }: Props) {
           <button onClick={onClose} className="text-[#8C7B6E] text-xl">✕</button>
         </div>
 
-        {/* Step 1: pick image */}
         {step === "pick" && (
           <div
             onClick={() => fileRef.current?.click()}
@@ -75,7 +64,6 @@ export default function CreatePost({ onClose }: Props) {
           </div>
         )}
 
-        {/* Step 2: preview + caption */}
         {step === "caption" && preview && (
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="aspect-square w-full rounded-2xl overflow-hidden bg-[#EDE3D8] relative">
@@ -100,10 +88,10 @@ export default function CreatePost({ onClose }: Props) {
 
             <button
               type="submit"
-              disabled={!caption.trim() || uploading}
+              disabled={!caption.trim() || createMutation.isPending}
               className="w-full py-3 rounded-xl bg-[#FF5500] text-white font-bold text-sm disabled:opacity-40 transition-opacity flex items-center justify-center gap-2"
             >
-              {uploading ? (
+              {createMutation.isPending ? (
                 <>
                   <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                   Uploading...

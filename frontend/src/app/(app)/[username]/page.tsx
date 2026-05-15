@@ -4,7 +4,7 @@ import { useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { useAuthStore } from "@/store/auth";
+import { useAuthStore } from "@/entities/user/store/authStore";
 import Navbar from "@/components/Navbar";
 import { useProfile } from "./_hooks/useProfile";
 import ProfileHero from "./_components/ProfileHero";
@@ -63,7 +63,6 @@ export default function ProfilePage() {
 
   return (
     <div className="min-h-screen bg-[#F5EDE0] lg:pl-60 pb-24 lg:pb-8">
-      {/* Top bar */}
       <header className="sticky top-0 z-20 bg-[#F5EDE0]/85 backdrop-blur-md border-b border-[#E8D9C8]">
         <div className="max-w-3xl mx-auto px-4 h-14 flex items-center gap-2">
           <Link
@@ -91,6 +90,7 @@ export default function ProfilePage() {
         <PostsSection
           posts={profile.posts}
           currentUserId={user?.user_id ?? ""}
+          ownerUsername={profile.username}
         />
       </main>
 

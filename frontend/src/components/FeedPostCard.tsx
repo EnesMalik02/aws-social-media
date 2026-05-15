@@ -3,8 +3,12 @@
 import { useState } from "react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
-import type { Post } from "@/lib/posts";
-import { usePostsStore } from "@/store/posts";
+import type { Post } from "@/entities/post/model/types";
+import { useLikeStore } from "@/entities/post/store/likeStore";
+import {
+  useToggleLikeMutation,
+  useDeletePostMutation,
+} from "@/entities/post/queries";
 import CommentModal from "./CommentModal";
 
 interface Props {
@@ -13,8 +17,6 @@ interface Props {
   username?: string;
   avatar?: string;
 }
-
-// ── Icons ──────────────────────────────────────────────
 
 function HeartIcon({ filled }: { filled: boolean }) {
   return (
@@ -62,8 +64,6 @@ function DotsIcon() {
   );
 }
 
-// ── Helpers ────────────────────────────────────────────
-
 function timeAgo(dateStr: string): string {
   const diff = Date.now() - new Date(dateStr).getTime();
   const m = Math.floor(diff / 60000);
@@ -76,8 +76,6 @@ function timeAgo(dateStr: string): string {
   return new Date(dateStr).toLocaleDateString("en", { month: "short", day: "numeric" });
 }
 
-// ── Detail Modal ───────────────────────────────────────
-
 interface DetailProps {
   post: Post;
   currentUserId: string;
@@ -87,31 +85,24 @@ interface DetailProps {
 }
 
 function PostDetailModal({ post, currentUserId, username, avatar, onClose }: DetailProps) {
-  const { likedPostIds, toggleLike, removePost } = usePostsStore();
+  const isLiked = useLikeStore((s) => s.likedPostIds.has(post.post_id));
+  const toggleLike = useToggleLikeMutation();
+  const deletePost = useDeletePostMutation(currentUserId);
   const [showComments, setShowComments] = useState(false);
   const [showMenu, setShowMenu] = useState(false);
-  const [deleting, setDeleting] = useState(false);
-  const isLiked = likedPostIds.has(post.post_id);
   const isOwner = post.user_id === currentUserId;
 
-  async function handleLike() {
-    try { await toggleLike(post.post_id, isLiked); } catch { /* ignore */ }
+  function handleLike() {
+    toggleLike.mutate({ postId: post.post_id, isLiked, userId: currentUserId });
   }
 
-  async function handleDelete() {
+  function handleDelete() {
     if (!confirm("Delete this post?")) return;
-    setDeleting(true);
-    try {
-      await removePost(post.post_id);
-      onClose();
-    } catch {
-      setDeleting(false);
-    }
+    deletePost.mutate(post.post_id, { onSuccess: onClose });
   }
 
   return (
     <>
-      {/* Backdrop */}
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
@@ -121,7 +112,6 @@ function PostDetailModal({ post, currentUserId, username, avatar, onClose }: Det
         onClick={onClose}
       />
 
-      {/* Panel */}
       <motion.div
         initial={{ opacity: 0, y: 24, scale: 0.96 }}
         animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -133,17 +123,14 @@ function PostDetailModal({ post, currentUserId, username, avatar, onClose }: Det
           className="bg-[#FDF8F3] rounded-t-3xl sm:rounded-2xl overflow-hidden w-full max-w-lg pointer-events-auto border border-[#E8D9C8] shadow-2xl"
           onClick={(e) => e.stopPropagation()}
         >
-          {/* Drag handle (mobile) */}
           <div className="flex justify-center pt-3 pb-1 sm:hidden">
             <div className="w-10 h-1 rounded-full bg-[#E8D9C8]" />
           </div>
 
-          {/* Header */}
           <div className="flex items-center justify-between px-4 py-3">
             <button
               onClick={onClose}
               className="w-8 h-8 rounded-full flex items-center justify-center text-[#8C7B6E] hover:bg-[#E8D9C8] transition-colors cursor-pointer flex-shrink-0"
-              aria-label="Close"
             >
               <CloseIcon />
             </button>
@@ -165,12 +152,10 @@ function PostDetailModal({ post, currentUserId, username, avatar, onClose }: Det
               </div>
             </Link>
 
-            {/* ... menu */}
             <div className="relative flex-shrink-0">
               <button
                 onClick={() => setShowMenu((v) => !v)}
                 className="w-8 h-8 rounded-full flex items-center justify-center text-[#8C7B6E] hover:bg-[#E8D9C8] transition-colors cursor-pointer"
-                aria-label="More options"
               >
                 <DotsIcon />
               </button>
@@ -189,7 +174,7 @@ function PostDetailModal({ post, currentUserId, username, avatar, onClose }: Det
                       {isOwner && (
                         <button
                           onClick={() => { setShowMenu(false); handleDelete(); }}
-                          disabled={deleting}
+                          disabled={deletePost.isPending}
                           className="w-full flex items-center gap-2.5 px-4 py-3 text-sm font-medium text-red-500 hover:bg-red-50 transition-colors cursor-pointer disabled:opacity-40"
                         >
                           <TrashIcon />
@@ -206,19 +191,16 @@ function PostDetailModal({ post, currentUserId, username, avatar, onClose }: Det
             </div>
           </div>
 
-          {/* Image */}
           <div className="w-full bg-[#EDE3D8] overflow-hidden">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src={post.image_url} alt={post.caption} className="w-full object-cover" style={{ aspectRatio: "1 / 1" }} />
           </div>
 
-          {/* Actions */}
           <div className="px-4 pt-3 pb-1 flex items-center gap-4">
             <motion.button
               onClick={handleLike}
               whileTap={{ scale: 0.8 }}
               className="flex items-center gap-2 cursor-pointer"
-              aria-label={isLiked ? "Unlike" : "Like"}
             >
               <motion.span
                 key={String(isLiked)}
@@ -239,13 +221,11 @@ function PostDetailModal({ post, currentUserId, username, avatar, onClose }: Det
             <button
               onClick={() => setShowComments(true)}
               className="text-[#8C7B6E] hover:text-[#FF5500] transition-colors cursor-pointer"
-              aria-label="Comments"
             >
               <ChatIcon />
             </button>
           </div>
 
-          {/* Caption */}
           <div className="px-4 pt-1 pb-5">
             <p className="text-sm text-[#1A1208] leading-relaxed">
               <span className="font-semibold">@{username ?? "unknown"}</span>{" "}
@@ -264,16 +244,14 @@ function PostDetailModal({ post, currentUserId, username, avatar, onClose }: Det
   );
 }
 
-// ── Feed Card ──────────────────────────────────────────
-
 export default function FeedPostCard({ post, currentUserId, username, avatar }: Props) {
-  const { likedPostIds, toggleLike } = usePostsStore();
+  const isLiked = useLikeStore((s) => s.likedPostIds.has(post.post_id));
+  const toggleLike = useToggleLikeMutation();
   const [showDetail, setShowDetail] = useState(false);
-  const isLiked = likedPostIds.has(post.post_id);
 
-  async function handleLike(e: React.MouseEvent) {
+  function handleLike(e: React.MouseEvent) {
     e.stopPropagation();
-    try { await toggleLike(post.post_id, isLiked); } catch { /* ignore */ }
+    toggleLike.mutate({ postId: post.post_id, isLiked, userId: currentUserId });
   }
 
   return (
@@ -286,7 +264,6 @@ export default function FeedPostCard({ post, currentUserId, username, avatar }: 
         transition={{ duration: 0.25 }}
         className="bg-[#FDF8F3] border border-[#E8D9C8] rounded-2xl overflow-hidden"
       >
-        {/* Header */}
         <div className="flex items-center gap-3 px-4 py-3">
           <Link href={username ? `/${username}` : "#"} className="flex items-center gap-3 group flex-1 min-w-0">
             <div className="w-9 h-9 rounded-full bg-[#EDE3D8] flex-shrink-0 overflow-hidden ring-2 ring-[#FF5500]/20 group-hover:ring-[#FF5500]/50 transition-all">
@@ -308,11 +285,9 @@ export default function FeedPostCard({ post, currentUserId, username, avatar }: 
           </Link>
         </div>
 
-        {/* Image — tapping opens detail */}
         <button
           onClick={() => setShowDetail(true)}
           className="w-full bg-[#EDE3D8] overflow-hidden block cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[#FF5500]"
-          aria-label="View post details"
         >
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
@@ -323,13 +298,11 @@ export default function FeedPostCard({ post, currentUserId, username, avatar }: 
           />
         </button>
 
-        {/* Actions */}
         <div className="px-4 pt-3 pb-1 flex items-center gap-5">
           <motion.button
             onClick={handleLike}
             whileTap={{ scale: 0.82 }}
             className="flex items-center gap-2 cursor-pointer"
-            aria-label={isLiked ? "Unlike" : "Like"}
           >
             <motion.span
               key={String(isLiked)}
@@ -345,20 +318,17 @@ export default function FeedPostCard({ post, currentUserId, username, avatar }: 
           <button
             onClick={() => setShowDetail(true)}
             className="text-[#8C7B6E] hover:text-[#FF5500] transition-colors cursor-pointer"
-            aria-label="View comments"
           >
             <ChatIcon />
           </button>
         </div>
 
-        {/* Like count */}
         {post.likes_count > 0 && (
           <p className="px-4 text-sm font-bold text-[#1A1208]">
             {post.likes_count.toLocaleString()} {post.likes_count === 1 ? "like" : "likes"}
           </p>
         )}
 
-        {/* Caption — Instagram style: username own line, caption below */}
         <div className="px-4 pt-2 pb-4">
           <Link
             href={username ? `/${username}` : "#"}

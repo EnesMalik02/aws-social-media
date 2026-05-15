@@ -2,19 +2,18 @@
 
 import { useRef, useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { useAuthStore } from "@/store/auth";
-import { usePostsStore } from "@/store/posts";
-import { getUploadUrl, uploadToS3, createPost } from "@/lib/posts";
+import { useAuthStore } from "@/entities/user/store/authStore";
+import { useCreatePostMutation } from "@/entities/post/queries";
 
 export function useCreatePost() {
   const router = useRouter();
   const { user, fetchMe } = useAuthStore();
-  const { addPost } = usePostsStore();
   const fileRef = useRef<HTMLInputElement>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [file, setFile] = useState<File | null>(null);
   const [caption, setCaption] = useState("");
-  const [uploading, setUploading] = useState(false);
+
+  const createMutation = useCreatePostMutation(user?.user_id);
 
   useEffect(() => {
     const token = localStorage.getItem("access_token");
@@ -36,19 +35,22 @@ export function useCreatePost() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!file || !caption.trim() || uploading) return;
-    setUploading(true);
-    try {
-      const { upload_url, image_url } = await getUploadUrl(file.name);
-      await uploadToS3(upload_url, file);
-      const post = await createPost(caption.trim(), image_url);
-      addPost(post);
-      router.push("/feed");
-    } catch (err) {
-      console.error(err);
-      setUploading(false);
-    }
+    if (!file || !caption.trim() || createMutation.isPending) return;
+    createMutation.mutate(
+      { file, caption: caption.trim() },
+      { onSuccess: () => router.push("/feed") }
+    );
   }
 
-  return { fileRef, preview, file, caption, setCaption, uploading, handleFileChange, clearImage, handleSubmit };
+  return {
+    fileRef,
+    preview,
+    file,
+    caption,
+    setCaption,
+    uploading: createMutation.isPending,
+    handleFileChange,
+    clearImage,
+    handleSubmit,
+  };
 }

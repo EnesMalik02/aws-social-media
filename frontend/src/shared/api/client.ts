@@ -2,16 +2,14 @@ import axios from "axios";
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
 
-export const api = axios.create({
+export const apiClient = axios.create({
   baseURL: BASE_URL,
 });
 
-api.interceptors.request.use((config) => {
+apiClient.interceptors.request.use((config) => {
   if (typeof window !== "undefined") {
-    const access_token = localStorage.getItem("access_token");
-    if (access_token) {
-      config.headers.Authorization = `Bearer ${access_token}`;
-    }
+    const token = localStorage.getItem("access_token");
+    if (token) config.headers.Authorization = `Bearer ${token}`;
   }
   return config;
 });
@@ -30,7 +28,7 @@ function processQueue(error: unknown, token: string | null) {
   failedQueue = [];
 }
 
-api.interceptors.response.use(
+apiClient.interceptors.response.use(
   (res) => res,
   async (error) => {
     const original = error.config;
@@ -44,16 +42,16 @@ api.interceptors.response.use(
         failedQueue.push({ resolve, reject });
       }).then((token) => {
         original.headers.Authorization = `Bearer ${token}`;
-        return api(original);
+        return apiClient(original);
       });
     }
 
     original._retry = true;
     isRefreshing = true;
 
-    const refresh_token = localStorage.getItem("refresh_token");
+    const refreshToken = localStorage.getItem("refresh_token");
 
-    if (!refresh_token) {
+    if (!refreshToken) {
       isRefreshing = false;
       localStorage.removeItem("access_token");
       window.location.href = "/login";
@@ -62,7 +60,7 @@ api.interceptors.response.use(
 
     try {
       const { data } = await axios.get(`${BASE_URL}/v1/auth/refresh`, {
-        headers: { Authorization: `Bearer ${refresh_token}` },
+        headers: { Authorization: `Bearer ${refreshToken}` },
       });
 
       localStorage.setItem("access_token", data.access_token);
@@ -70,7 +68,7 @@ api.interceptors.response.use(
 
       processQueue(null, data.access_token);
       original.headers.Authorization = `Bearer ${data.access_token}`;
-      return api(original);
+      return apiClient(original);
     } catch (refreshError) {
       processQueue(refreshError, null);
       localStorage.removeItem("access_token");

@@ -1,10 +1,8 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
+import { useRef, useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { fetchPostComments } from "@/lib/graphql";
-import { addComment } from "@/lib/posts";
-import type { Comment } from "@/lib/posts";
+import { usePostComments, useAddCommentMutation } from "@/entities/post/queries";
 
 interface Props {
   postId: string;
@@ -12,35 +10,24 @@ interface Props {
 }
 
 export default function CommentModal({ postId, onClose }: Props) {
-  const [comments, setComments] = useState<Comment[]>([]);
   const [text, setText] = useState("");
-  const [loading, setLoading] = useState(true);
-  const [submitting, setSubmitting] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
+  const { data: comments = [], isLoading } = usePostComments(postId);
+  const addComment = useAddCommentMutation(postId);
+
   useEffect(() => {
-    fetchPostComments(postId)
-      .then(setComments)
-      .finally(() => setLoading(false));
     setTimeout(() => inputRef.current?.focus(), 100);
-  }, [postId]);
+  }, []);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!text.trim() || submitting) return;
-    setSubmitting(true);
-    try {
-      const comment = await addComment(postId, text.trim());
-      setComments((prev) => [...prev, comment]);
-      setText("");
-    } finally {
-      setSubmitting(false);
-    }
+    if (!text.trim() || addComment.isPending) return;
+    addComment.mutate(text.trim(), { onSuccess: () => setText("") });
   }
 
   return (
     <>
-      {/* Backdrop */}
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
@@ -49,7 +36,6 @@ export default function CommentModal({ postId, onClose }: Props) {
         className="fixed inset-0 bg-black/40 z-40"
       />
 
-      {/* Sheet */}
       <motion.div
         initial={{ y: "100%" }}
         animate={{ y: 0 }}
@@ -57,7 +43,6 @@ export default function CommentModal({ postId, onClose }: Props) {
         transition={{ type: "spring", damping: 30, stiffness: 300 }}
         className="fixed bottom-0 left-0 right-0 z-50 bg-[#FDF8F3] rounded-t-3xl border-t border-[#E8D9C8] max-h-[70vh] flex flex-col"
       >
-        {/* Handle */}
         <div className="flex justify-center pt-3 pb-2">
           <div className="w-10 h-1 rounded-full bg-[#E8D9C8]" />
         </div>
@@ -67,14 +52,13 @@ export default function CommentModal({ postId, onClose }: Props) {
           <button onClick={onClose} className="text-[#8C7B6E] text-lg">✕</button>
         </div>
 
-        {/* Comment list */}
         <div className="flex-1 overflow-y-auto px-4 py-2 space-y-3">
-          {loading && (
+          {isLoading && (
             <div className="flex justify-center py-8">
               <div className="w-6 h-6 border-2 border-[#E8D9C8] border-t-[#FF5500] rounded-full animate-spin" />
             </div>
           )}
-          {!loading && comments.length === 0 && (
+          {!isLoading && comments.length === 0 && (
             <p className="text-center text-[#C4B5A5] text-sm py-8">No comments yet.</p>
           )}
           {comments.map((c) => (
@@ -93,7 +77,6 @@ export default function CommentModal({ postId, onClose }: Props) {
           ))}
         </div>
 
-        {/* Input */}
         <form onSubmit={handleSubmit} className="px-4 py-3 border-t border-[#E8D9C8] flex gap-2">
           <input
             ref={inputRef}
@@ -104,7 +87,7 @@ export default function CommentModal({ postId, onClose }: Props) {
           />
           <button
             type="submit"
-            disabled={!text.trim() || submitting}
+            disabled={!text.trim() || addComment.isPending}
             className="px-4 py-2 rounded-xl bg-[#FF5500] text-white text-sm font-semibold disabled:opacity-40 transition-opacity"
           >
             Post

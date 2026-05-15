@@ -4,8 +4,8 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
-import { api } from "@/lib/api";
-import { useAuthStore } from "@/store/auth";
+import { apiClient } from "@/shared/api/client";
+import { useAuthStore } from "@/entities/user/store/authStore";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -22,7 +22,7 @@ export default function LoginPage() {
     setLoading(true);
 
     try {
-      const { data } = await api.post("/v1/auth/login", form);
+      const { data } = await apiClient.post("/v1/auth/login", form);
       setTokens(data.token.access_token, data.token.refresh_token);
       await fetchMe();
       router.replace("/feed");

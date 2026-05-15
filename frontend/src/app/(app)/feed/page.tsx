@@ -3,15 +3,14 @@
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { useAuthStore } from "@/store/auth";
-import { usePostsStore } from "@/store/posts";
+import { useAuthStore } from "@/entities/user/store/authStore";
+import { useUserPosts } from "@/entities/post/queries";
 import FeedPostCard from "@/components/FeedPostCard";
 import Navbar from "@/components/Navbar";
 
 function SkeletonCard() {
   return (
     <div className="bg-[#FDF8F3] animate-pulse">
-      {/* header */}
       <div className="flex items-center gap-3 px-4 py-3">
         <div className="w-9 h-9 rounded-full bg-[#EDE3D8]" />
         <div className="space-y-1.5">
@@ -19,9 +18,7 @@ function SkeletonCard() {
           <div className="w-14 h-2.5 rounded-full bg-[#EDE3D8]" />
         </div>
       </div>
-      {/* image */}
       <div className="w-full aspect-square bg-[#EDE3D8]" />
-      {/* actions */}
       <div className="px-4 py-3 space-y-2">
         <div className="w-16 h-3 rounded-full bg-[#EDE3D8]" />
         <div className="w-48 h-3 rounded-full bg-[#EDE3D8]" />
@@ -34,7 +31,9 @@ function SkeletonCard() {
 export default function FeedPage() {
   const router = useRouter();
   const { user, loading: authLoading, fetchMe } = useAuthStore();
-  const { posts, loading: postsLoading, loadPosts } = usePostsStore();
+  const { data: posts = [], isLoading: postsLoading } = useUserPosts(
+    user?.user_id
+  );
 
   useEffect(() => {
     const token = localStorage.getItem("access_token");
@@ -44,10 +43,6 @@ export default function FeedPage() {
     }
     if (!user) fetchMe();
   }, [user, fetchMe, router]);
-
-  useEffect(() => {
-    if (user) loadPosts(user.user_id);
-  }, [user, loadPosts]);
 
   if (authLoading || !user) {
     return (
@@ -59,7 +54,6 @@ export default function FeedPage() {
 
   return (
     <div className="min-h-dvh bg-[#F5EDE0] lg:pl-60">
-      {/* ── Feed ── */}
       <main className="max-w-xl mx-auto pt-4 pb-28 lg:pb-8">
         {postsLoading ? (
           <div className="space-y-0">
@@ -109,7 +103,6 @@ export default function FeedPage() {
         )}
       </main>
 
-      {/* ── Bottom Nav ── */}
       <Navbar username={user.username} />
     </div>
   );
