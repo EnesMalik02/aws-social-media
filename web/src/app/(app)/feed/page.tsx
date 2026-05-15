@@ -97,7 +97,7 @@ export default function FeedPage() {
           <AnimatePresence mode="popLayout">
             <div className="space-y-4">
               {posts.map((post) => (
-                <PostCard key={post.post_id} post={post} currentUserId={user.user_id} />
+                <PostCard key={post.post_id} post={post} currentUserId={user.user_id} username={user.username} />
               ))}
             </div>
           </AnimatePresence>

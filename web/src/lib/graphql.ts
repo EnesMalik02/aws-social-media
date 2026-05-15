@@ -46,6 +46,61 @@ function mapComment(c: GQLComment): Comment {
   };
 }
 
+export interface UserProfile {
+  userId: string;
+  username: string;
+  bio: string;
+  avatar: string;
+  followersCount: number;
+  followingCount: number;
+  isOwner: boolean;
+  isFollowing: boolean;
+  posts: Post[];
+}
+
+interface GQLUserProfile {
+  userId: string;
+  username: string;
+  bio: string;
+  avatar: string;
+  followersCount: number;
+  followingCount: number;
+  isOwner: boolean;
+  isFollowing: boolean;
+  posts: GQLPost[];
+}
+
+function mapProfile(p: GQLUserProfile): UserProfile {
+  return {
+    userId: p.userId,
+    username: p.username,
+    bio: p.bio,
+    avatar: p.avatar,
+    followersCount: p.followersCount,
+    followingCount: p.followingCount,
+    isOwner: p.isOwner,
+    isFollowing: p.isFollowing,
+    posts: p.posts.map(mapPost),
+  };
+}
+
+const USER_PROFILE_FIELDS = `
+  userId username bio avatar
+  followersCount followingCount
+  isOwner isFollowing
+  posts { postId userId caption imageUrl likesCount createdAt }
+`;
+
+export async function fetchUserProfileByUsername(username: string): Promise<UserProfile> {
+  const data = await gql<{ userProfileByUsername: GQLUserProfile }>(
+    `query UserProfileByUsername($username: String!) {
+      userProfileByUsername(username: $username) { ${USER_PROFILE_FIELDS} }
+    }`,
+    { username }
+  );
+  return mapProfile(data.userProfileByUsername);
+}
+
 export async function fetchUserPosts(userId: string): Promise<Post[]> {
   const data = await gql<{ userPosts: GQLPost[] }>(
     `query UserPosts($userId: String!) {

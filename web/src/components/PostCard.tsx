@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import type { Post } from "@/lib/posts";
 import { usePostsStore } from "@/store/posts";
@@ -9,9 +10,10 @@ import CommentModal from "./CommentModal";
 interface Props {
   post: Post;
   currentUserId: string;
+  username?: string;
 }
 
-export default function PostCard({ post, currentUserId }: Props) {
+export default function PostCard({ post, currentUserId, username }: Props) {
   const { likedPostIds, toggleLike, removePost } = usePostsStore();
   const [showComments, setShowComments] = useState(false);
   const [deleting, setDeleting] = useState(false);
@@ -45,6 +47,18 @@ export default function PostCard({ post, currentUserId }: Props) {
         exit={{ opacity: 0, scale: 0.95 }}
         className="bg-[#FDF8F3] border border-[#E8D9C8] rounded-2xl overflow-hidden"
       >
+        {/* Post header — only when username provided */}
+        {username && (
+          <div className="px-4 pt-3 pb-1">
+            <Link
+              href={`/${username}`}
+              className="text-sm font-semibold text-[#1A1208] hover:text-[#FF5500] transition-colors"
+            >
+              @{username}
+            </Link>
+          </div>
+        )}
+
         {/* Image */}
         <div className="aspect-square w-full bg-[#EDE3D8] relative overflow-hidden">
           {/* eslint-disable-next-line @next/next/no-img-element */}
