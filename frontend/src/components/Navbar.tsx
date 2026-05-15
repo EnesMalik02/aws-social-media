@@ -56,7 +56,7 @@ export default function Navbar({ username }: Props) {
         <div className="px-6 pt-8 pb-6">
           <Link href="/feed" className="block">
             <span className="text-[22px] font-black tracking-tight text-[#1A1208]">
-              heap<span className="text-[#FF5500]">tify</span>
+              <span className="text-[#FF5500]">Pixora</span>
             </span>
           </Link>
           <p className="text-[11px] text-[#C4B5A5] font-medium mt-0.5 tracking-wide">Share your moments</p>
