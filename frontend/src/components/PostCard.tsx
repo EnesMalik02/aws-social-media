@@ -47,18 +47,6 @@ export default function PostCard({ post, currentUserId, username }: Props) {
         exit={{ opacity: 0, scale: 0.95 }}
         className="bg-[#FDF8F3] border border-[#E8D9C8] rounded-2xl overflow-hidden"
       >
-        {/* Post header — only when username provided */}
-        {username && (
-          <div className="px-4 pt-3 pb-1">
-            <Link
-              href={`/${username}`}
-              className="text-sm font-semibold text-[#1A1208] hover:text-[#FF5500] transition-colors"
-            >
-              @{username}
-            </Link>
-          </div>
-        )}
-
         {/* Image */}
         <div className="aspect-square w-full bg-[#EDE3D8] relative overflow-hidden">
           {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -71,7 +59,16 @@ export default function PostCard({ post, currentUserId, username }: Props) {
 
         {/* Body */}
         <div className="p-4">
-          <p className="text-[#1A1208] text-sm leading-relaxed mb-3">{post.caption}</p>
+          {/* Caption — Instagram style */}
+          {username && (
+            <Link
+              href={`/${username}`}
+              className="text-sm font-bold text-[#1A1208] hover:text-[#FF5500] transition-colors block leading-snug mb-0.5"
+            >
+              @{username}
+            </Link>
+          )}
+          <p className="text-[#4A3F36] text-sm leading-relaxed mb-3">{post.caption}</p>
 
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
