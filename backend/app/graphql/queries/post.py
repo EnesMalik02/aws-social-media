@@ -1,3 +1,4 @@
+import strawberry
 from strawberry.types import Info
 from fastapi import HTTPException
 
@@ -22,3 +23,10 @@ def resolve_post_comments(info: Info, post_id: str) -> list[CommentType]:
     post_repo = info.context["post_repo"]
     comments = post_repo.get_comments(post_id)
     return [CommentType(**c) for c in comments]
+
+
+@strawberry.type
+class PostQuery:
+    post: PostType = strawberry.field(resolver=resolve_post)
+    user_posts: list[PostType] = strawberry.field(resolver=resolve_user_posts)
+    post_comments: list[CommentType] = strawberry.field(resolver=resolve_post_comments)

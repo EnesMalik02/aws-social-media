@@ -1,45 +1,29 @@
 import strawberry
 from strawberry.fastapi import GraphQLRouter
+from strawberry.tools import merge_types
 from fastapi import Request
-from typing import List
 
-from app.graphql.queries.user import resolve_me
-from app.graphql.queries.post import resolve_post, resolve_user_posts, resolve_post_comments
-from app.graphql.mutations.user import resolve_update_profile, UpdateProfileInput
-from app.graphql.types.user import UserType
-from app.graphql.types.post import PostType, CommentType
+from app.graphql.queries import UserQuery, PostQuery
+from app.graphql.mutations import UserMutation
 
-
-@strawberry.type
-class Query:
-    me: UserType = strawberry.field(resolver=resolve_me)
-
-    post: PostType = strawberry.field(resolver=resolve_post)
-
-    user_posts: List[PostType] = strawberry.field(resolver=resolve_user_posts)
-
-    post_comments: List[CommentType] = strawberry.field(resolver=resolve_post_comments)
-
-
-@strawberry.type
-class Mutation:
-    update_profile: UserType = strawberry.mutation(resolver=resolve_update_profile)
-
+Query    = merge_types("Query",    (UserQuery, PostQuery))
+Mutation = merge_types("Mutation", (UserMutation,))
 
 schema = strawberry.Schema(query=Query, mutation=Mutation)
 
 
 async def get_context(request: Request) -> dict:
     from app.core.security import decode_token
-    from app.infrastructure.dynamodb import user_repo, post_repo
+    from app.infrastructure.dynamodb import user_repo, post_repo, follow_repo
 
-    token = request.headers.get("Authorization", "").replace("Bearer ", "")
+    token   = request.headers.get("Authorization", "").replace("Bearer ", "")
     user_id = decode_token(token) if token else None
 
     return {
-        "user_id":   user_id,
-        "user_repo": user_repo,
-        "post_repo": post_repo,
+        "user_id":    user_id,
+        "user_repo":  user_repo,
+        "post_repo":  post_repo,
+        "follow_repo": follow_repo,
     }
 
 

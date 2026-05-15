@@ -45,3 +45,8 @@ def resolve_update_profile(info: Info, input: UpdateProfileInput) -> UserType:
         bio=updated.get("bio"),
         avatar=updated.get("avatar"),
     )
+
+
+@strawberry.type
+class UserMutation:
+    update_profile: UserType = strawberry.mutation(resolver=resolve_update_profile)
