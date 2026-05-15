@@ -5,7 +5,6 @@ import { usePathname } from "next/navigation";
 
 interface Props {
   username?: string;
-  onCreatePost?: () => void;
 }
 
 function HomeIcon({ active }: { active: boolean }) {
@@ -44,7 +43,7 @@ function ExploreIcon({ active }: { active: boolean }) {
   );
 }
 
-export default function BottomNav({ username, onCreatePost }: Props) {
+export default function Navbar({ username }: Props) {
   const pathname = usePathname();
   const isFeed = pathname === "/feed";
   const isProfile = username ? pathname === `/${username}` : false;
@@ -104,14 +103,14 @@ export default function BottomNav({ username, onCreatePost }: Props) {
 
         {/* Create post CTA */}
         <div className="px-3 pb-6 pt-3">
-          <button
-            onClick={onCreatePost}
-            className="w-full flex items-center justify-center gap-2.5 py-3 rounded-xl bg-[#FF5500] text-white font-semibold text-[15px] hover:bg-[#e64d00] active:scale-[0.98] transition-all duration-150 cursor-pointer shadow-md shadow-[#FF5500]/25"
+          <Link
+            href="/create"
+            className="w-full flex items-center justify-center gap-2.5 py-3 rounded-xl bg-[#FF5500] text-white font-semibold text-[15px] hover:bg-[#e64d00] active:scale-[0.98] transition-all duration-150 shadow-md shadow-[#FF5500]/25"
             aria-label="Create new post"
           >
             <PlusIcon />
             <span>Create post</span>
-          </button>
+          </Link>
 
           {/* Username chip */}
           {username && (
@@ -152,13 +151,13 @@ export default function BottomNav({ username, onCreatePost }: Props) {
 
           {/* Create */}
           <div className="flex-1 flex justify-center">
-            <button
-              onClick={onCreatePost}
-              className="w-12 h-12 rounded-2xl bg-[#FF5500] text-white flex items-center justify-center shadow-md shadow-[#FF5500]/30 hover:bg-[#e64d00] active:scale-95 transition-all cursor-pointer"
+            <Link
+              href="/create"
+              className="w-12 h-12 rounded-2xl bg-[#FF5500] text-white flex items-center justify-center shadow-md shadow-[#FF5500]/30 hover:bg-[#e64d00] active:scale-95 transition-all"
               aria-label="Create new post"
             >
               <PlusIcon />
-            </button>
+            </Link>
           </div>
 
           {/* Profile */}

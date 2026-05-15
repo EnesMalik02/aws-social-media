@@ -1,13 +1,12 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuthStore } from "@/store/auth";
 import { usePostsStore } from "@/store/posts";
 import FeedPostCard from "@/components/FeedPostCard";
-import CreatePost from "@/components/CreatePost";
-import BottomNav from "@/components/BottomNav";
+import Navbar from "@/components/Navbar";
 
 function SkeletonCard() {
   return (
@@ -36,7 +35,6 @@ export default function FeedPage() {
   const router = useRouter();
   const { user, loading: authLoading, fetchMe } = useAuthStore();
   const { posts, loading: postsLoading, loadPosts } = usePostsStore();
-  const [showCreate, setShowCreate] = useState(false);
 
   useEffect(() => {
     const token = localStorage.getItem("access_token");
@@ -88,7 +86,7 @@ export default function FeedPage() {
               <p className="text-sm text-[#8C7B6E] mt-1">Share your first moment</p>
             </div>
             <button
-              onClick={() => setShowCreate(true)}
+              onClick={() => router.push("/create")}
               className="mt-2 px-6 py-2.5 rounded-xl bg-[#FF5500] text-white text-sm font-semibold hover:bg-[#e64d00] transition-colors cursor-pointer"
             >
               Create post
@@ -112,12 +110,7 @@ export default function FeedPage() {
       </main>
 
       {/* ── Bottom Nav ── */}
-      <BottomNav username={user.username} onCreatePost={() => setShowCreate(true)} />
-
-      {/* ── Create post modal ── */}
-      <AnimatePresence>
-        {showCreate && <CreatePost onClose={() => setShowCreate(false)} />}
-      </AnimatePresence>
+      <Navbar username={user.username} />
     </div>
   );
 }

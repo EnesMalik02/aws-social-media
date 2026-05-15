@@ -5,7 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { useAuthStore } from "@/store/auth";
-import BottomNav from "@/components/BottomNav";
+import Navbar from "@/components/Navbar";
 import { useProfile } from "./_hooks/useProfile";
 import ProfileHero from "./_components/ProfileHero";
 import ProfileActions from "./_components/ProfileActions";
@@ -94,7 +94,7 @@ export default function ProfilePage() {
         />
       </main>
 
-      <BottomNav username={user?.username} />
+      <Navbar username={user?.username} />
     </div>
   );
 }
