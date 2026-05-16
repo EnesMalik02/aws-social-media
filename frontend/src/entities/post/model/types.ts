@@ -5,6 +5,7 @@ export interface Post {
   image_url: string;
   likes_count: number;
   created_at: string;
+  is_liked: boolean;
 }
 
 export interface Comment {

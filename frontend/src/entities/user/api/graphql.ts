@@ -9,6 +9,7 @@ interface GQLPost {
   imageUrl: string;
   likesCount: number;
   createdAt: string;
+  isLiked: boolean;
 }
 
 interface GQLUserProfile {
@@ -31,6 +32,7 @@ function mapPost(p: GQLPost): Post {
     image_url: p.imageUrl,
     likes_count: p.likesCount,
     created_at: p.createdAt,
+    is_liked: p.isLiked,
   };
 }
 
@@ -38,7 +40,7 @@ const USER_PROFILE_FIELDS = `
   userId username bio avatar
   followersCount followingCount
   isOwner isFollowing
-  posts { postId userId caption imageUrl likesCount createdAt }
+  posts { postId userId caption imageUrl likesCount createdAt isLiked }
 `;
 
 export async function fetchUserProfileByUsername(

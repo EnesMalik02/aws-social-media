@@ -8,6 +8,7 @@ interface GQLPost {
   imageUrl: string;
   likesCount: number;
   createdAt: string;
+  isLiked: boolean;
 }
 
 interface GQLComment {
@@ -26,6 +27,7 @@ function mapPost(p: GQLPost): Post {
     image_url: p.imageUrl,
     likes_count: p.likesCount,
     created_at: p.createdAt,
+    is_liked: p.isLiked,
   };
 }
 
@@ -43,7 +45,7 @@ export async function fetchUserPosts(userId: string): Promise<Post[]> {
   const data = await gql<{ userPosts: GQLPost[] }>(
     `query UserPosts($userId: String!) {
       userPosts(userId: $userId) {
-        postId userId caption imageUrl likesCount createdAt
+        postId userId caption imageUrl likesCount createdAt isLiked
       }
     }`,
     { userId }

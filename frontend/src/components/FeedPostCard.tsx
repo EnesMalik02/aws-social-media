@@ -4,7 +4,6 @@ import { useState } from "react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import type { Post } from "@/entities/post/model/types";
-import { useLikeStore } from "@/entities/post/store/likeStore";
 import {
   useToggleLikeMutation,
   useDeletePostMutation,
@@ -85,7 +84,7 @@ interface DetailProps {
 }
 
 function PostDetailModal({ post, currentUserId, username, avatar, onClose }: DetailProps) {
-  const isLiked = useLikeStore((s) => s.likedPostIds.has(post.post_id));
+  const isLiked = post.is_liked;
   const toggleLike = useToggleLikeMutation();
   const deletePost = useDeletePostMutation(currentUserId);
   const [showComments, setShowComments] = useState(false);
@@ -245,7 +244,7 @@ function PostDetailModal({ post, currentUserId, username, avatar, onClose }: Det
 }
 
 export default function FeedPostCard({ post, currentUserId, username, avatar }: Props) {
-  const isLiked = useLikeStore((s) => s.likedPostIds.has(post.post_id));
+  const isLiked = post.is_liked;
   const toggleLike = useToggleLikeMutation();
   const [showDetail, setShowDetail] = useState(false);
 

@@ -13,7 +13,6 @@ import {
   unlikePost,
   addComment,
 } from "../api/rest";
-import { useLikeStore } from "../store/likeStore";
 import type { Post } from "../model/types";
 
 export const postKeys = {
@@ -66,7 +65,6 @@ export function useDeletePostMutation(userId: string | undefined) {
 
 export function useToggleLikeMutation() {
   const qc = useQueryClient();
-  const { add, remove } = useLikeStore();
 
   return useMutation({
     mutationFn: ({
@@ -79,9 +77,6 @@ export function useToggleLikeMutation() {
     }) => (isLiked ? unlikePost(postId) : likePost(postId)),
 
     onMutate: ({ postId, isLiked, userId }) => {
-      if (isLiked) remove(postId);
-      else add(postId);
-
       const key = postKeys.byUser(userId);
       const previous = qc.getQueryData<Post[]>(key);
 
@@ -89,7 +84,11 @@ export function useToggleLikeMutation() {
         if (!old) return old;
         return old.map((p) =>
           p.post_id === postId
-            ? { ...p, likes_count: p.likes_count + (isLiked ? -1 : 1) }
+            ? {
+                ...p,
+                is_liked: !isLiked,
+                likes_count: p.likes_count + (isLiked ? -1 : 1),
+              }
             : p
         );
       });
@@ -97,9 +96,7 @@ export function useToggleLikeMutation() {
       return { previous, key };
     },
 
-    onError: (_err, { postId, isLiked }, ctx) => {
-      if (isLiked) add(postId);
-      else remove(postId);
+    onError: (_err, _vars, ctx) => {
       if (ctx?.previous) qc.setQueryData(ctx.key, ctx.previous);
     },
   });

@@ -4,7 +4,6 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useQueryClient } from "@tanstack/react-query";
 import type { Post } from "@/entities/post/model/types";
-import { useLikeStore } from "@/entities/post/store/likeStore";
 import {
   useToggleLikeMutation,
   useDeletePostMutation,
@@ -63,7 +62,7 @@ interface PostDetailProps {
 
 function PostDetail({ post, currentUserId, ownerUsername, onClose }: PostDetailProps) {
   const qc = useQueryClient();
-  const isLiked = useLikeStore((s) => s.likedPostIds.has(post.post_id));
+  const isLiked = post.is_liked;
   const toggleLike = useToggleLikeMutation();
   const deletePost = useDeletePostMutation(currentUserId);
   const [showComments, setShowComments] = useState(false);
