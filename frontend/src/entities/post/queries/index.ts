@@ -43,7 +43,7 @@ export function useCreatePostMutation(userId: string | undefined) {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async ({ file, caption }: { file: File; caption: string }) => {
-      const { upload_url, image_url } = await getUploadUrl(file.name);
+      const { upload_url, image_url } = await getUploadUrl(file.name, file.type);
       await uploadToS3(upload_url, file);
       return createPost(caption, image_url);
     },

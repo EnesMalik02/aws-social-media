@@ -2,10 +2,11 @@ import { apiClient } from "@/shared/api/client";
 import type { Post, Comment } from "../model/types";
 
 export async function getUploadUrl(
-  filename: string
+  filename: string,
+  contentType: string
 ): Promise<{ upload_url: string; image_url: string }> {
   const { data } = await apiClient.get("/v1/posts/upload-url", {
-    params: { filename },
+    params: { filename, content_type: contentType },
   });
   return data;
 }

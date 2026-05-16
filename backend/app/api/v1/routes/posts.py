@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 from app.core.dependencies import get_current_user
 from app.modules.posts.service import PostService
 from app.modules.posts.dependencies import get_post_service
@@ -13,13 +13,18 @@ from app.modules.posts.schemas import (
 router = APIRouter()
 
 
+ALLOWED_IMAGE_TYPES = {"image/jpeg", "image/png", "image/webp", "image/gif", "image/heic"}
+
 @router.get("/upload-url", response_model=UploadUrlResponse)
 def get_upload_url(
     filename: str,
+    content_type: str = "image/jpeg",
     current_user_id: str = Depends(get_current_user),
     service: PostService = Depends(get_post_service),
 ):
-    return service.get_upload_url(current_user_id, filename)
+    if content_type not in ALLOWED_IMAGE_TYPES:
+        raise HTTPException(status_code=400, detail=f"Unsupported file type: {content_type}")
+    return service.get_upload_url(current_user_id, filename, content_type)
 
 
 @router.post("/", response_model=PostResponse, status_code=201)

@@ -14,9 +14,9 @@ class PostService:
     def __init__(self, post_repo: PostRepository):
         self.post_repo = post_repo
 
-    def get_upload_url(self, user_id: str, filename: str) -> dict:
+    def get_upload_url(self, user_id: str, filename: str, content_type: str = "image/jpeg") -> dict:
         key        = f"posts/{user_id}/{uuid.uuid4()}/{filename}"
-        upload_url = generate_upload_url(key)
+        upload_url = generate_upload_url(key, content_type)
         image_url  = f"https://pixora-media-675715936315.s3.eu-central-1.amazonaws.com/{key}"
         return {"upload_url": upload_url, "image_url": image_url}
 
