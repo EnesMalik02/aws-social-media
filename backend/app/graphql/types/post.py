@@ -9,6 +9,7 @@ class PostType:
     image_url:   str
     likes_count: int
     created_at:  str
+    is_liked:    bool
 
 
 @strawberry.type

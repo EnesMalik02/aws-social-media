@@ -103,6 +103,19 @@ class PostRepository:
         response = self.table.get_item(Key=Keys.like(post_id, user_id))
         return "Item" in response
 
+    def batch_is_liked(self, post_ids: list[str], user_id: str) -> dict[str, bool]:
+        if not post_ids:
+            return {}
+        keys = [Keys.like(pid, user_id) for pid in post_ids]
+        response = self.table.meta.client.batch_get_item(
+            RequestItems={self.table.name: {"Keys": keys}}
+        )
+        liked = {
+            item["post_id"]
+            for item in response["Responses"].get(self.table.name, [])
+        }
+        return {pid: pid in liked for pid in post_ids}
+
     def add_comment(self, post_id: str, user_id: str, text: str) -> dict:
         comment_id = str(uuid.uuid4())
         created_at = datetime.now(timezone.utc).isoformat()
