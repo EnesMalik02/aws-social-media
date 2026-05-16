@@ -14,7 +14,6 @@ import CommentModal from "./CommentModal";
 interface Props {
   posts: Post[];
   currentUserId: string;
-  ownerUsername: string;
 }
 
 function HeartIcon({ filled }: { filled: boolean }) {
@@ -56,13 +55,13 @@ function CloseIcon() {
 interface PostDetailProps {
   post: Post;
   currentUserId: string;
-  ownerUsername: string;
   onClose: () => void;
 }
 
-function PostDetail({ post, currentUserId, ownerUsername, onClose }: PostDetailProps) {
+function PostDetail({ post, currentUserId, onClose }: PostDetailProps) {
   const qc = useQueryClient();
   const isLiked = post.is_liked;
+  const { username } = post;
   const toggleLike = useToggleLikeMutation();
   const deletePost = useDeletePostMutation(currentUserId);
   const [showComments, setShowComments] = useState(false);
@@ -78,7 +77,7 @@ function PostDetail({ post, currentUserId, ownerUsername, onClose }: PostDetailP
     setDeleting(true);
     deletePost.mutate(post.post_id, {
       onSuccess: () => {
-        qc.invalidateQueries({ queryKey: userKeys.profile(ownerUsername) });
+        qc.invalidateQueries({ queryKey: userKeys.profile(username) });
         onClose();
       },
       onError: () => setDeleting(false),
@@ -184,7 +183,7 @@ function PostDetail({ post, currentUserId, ownerUsername, onClose }: PostDetailP
   );
 }
 
-export default function ProfilePostGrid({ posts, currentUserId, ownerUsername }: Props) {
+export default function ProfilePostGrid({ posts, currentUserId }: Props) {
   const [selectedPost, setSelectedPost] = useState<Post | null>(null);
 
   if (posts.length === 0) {
@@ -243,7 +242,6 @@ export default function ProfilePostGrid({ posts, currentUserId, ownerUsername }:
             key={selectedPost.post_id}
             post={selectedPost}
             currentUserId={currentUserId}
-            ownerUsername={ownerUsername}
             onClose={() => setSelectedPost(null)}
           />
         )}

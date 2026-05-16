@@ -7,7 +7,6 @@ import type { Post } from "@/entities/post/model/types";
 interface Props {
   posts: Post[];
   currentUserId: string;
-  ownerUsername: string;
 }
 
 function GridIcon() {
@@ -19,7 +18,7 @@ function GridIcon() {
   );
 }
 
-export default function PostsSection({ posts, currentUserId, ownerUsername }: Props) {
+export default function PostsSection({ posts, currentUserId }: Props) {
   return (
     <>
       <motion.div
@@ -40,7 +39,6 @@ export default function PostsSection({ posts, currentUserId, ownerUsername }: Pr
         <ProfilePostGrid
           posts={posts}
           currentUserId={currentUserId}
-          ownerUsername={ownerUsername}
         />
       </motion.div>
     </>

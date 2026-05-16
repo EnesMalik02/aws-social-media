@@ -1,6 +1,8 @@
 export interface Post {
   post_id: string;
   user_id: string;
+  username: string;
+  avatar: string;
   caption: string;
   image_url: string;
   likes_count: number;

@@ -4,6 +4,7 @@ from fastapi import HTTPException
 
 from app.graphql.types.user import UserType, UserProfileType
 from app.graphql.types.post import PostType
+from app.graphql.queries.post import _build_post_type
 
 
 def resolve_me(info: Info) -> UserType:
@@ -26,12 +27,15 @@ def _build_user_profile(info: Info, user: dict) -> UserProfileType:
     current_user_id = info.context.get("user_id")
 
     user_id = user["user_id"]
-    posts = post_repo.get_user_posts(user_id)
+    posts   = post_repo.get_user_posts(user_id)
 
     is_following = False
     if current_user_id and current_user_id != user_id:
         follow = follow_repo.get_follow(current_user_id, user_id)
         is_following = follow is not None
+
+    post_ids  = [p["post_id"] for p in posts]
+    liked_map = post_repo.batch_is_liked(post_ids, current_user_id) if current_user_id else {}
 
     return UserProfileType(
         user_id=user["user_id"],
@@ -42,7 +46,7 @@ def _build_user_profile(info: Info, user: dict) -> UserProfileType:
         following_count=int(user.get("following_count", 0)),
         is_owner=current_user_id == user_id,
         is_following=is_following,
-        posts=[PostType(**p) for p in posts],
+        posts=[_build_post_type(p, user, liked_map.get(p["post_id"], False)) for p in posts],
     )
 
 

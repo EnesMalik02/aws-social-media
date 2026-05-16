@@ -5,6 +5,8 @@ import strawberry
 class PostType:
     post_id:     str
     user_id:     str
+    username:    str
+    avatar:      str
     caption:     str
     image_url:   str
     likes_count: int

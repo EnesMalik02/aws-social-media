@@ -13,10 +13,10 @@ import CommentModal from "./CommentModal";
 interface Props {
   post: Post;
   currentUserId: string;
-  username?: string;
 }
 
-export default function PostCard({ post, currentUserId, username }: Props) {
+export default function PostCard({ post, currentUserId }: Props) {
+  const { username } = post;
   const isLiked = post.is_liked;
   const toggleLike = useToggleLikeMutation();
   const deletePost = useDeletePostMutation(currentUserId);

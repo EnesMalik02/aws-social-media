@@ -94,8 +94,6 @@ export default function FeedPage() {
                   key={post.post_id}
                   post={post}
                   currentUserId={user.user_id}
-                  username={user.username}
-                  avatar={user.avatar}
                 />
               ))}
             </div>

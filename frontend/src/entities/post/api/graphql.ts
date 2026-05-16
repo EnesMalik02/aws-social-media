@@ -4,6 +4,8 @@ import type { Post, Comment } from "../model/types";
 interface GQLPost {
   postId: string;
   userId: string;
+  username: string;
+  avatar: string;
   caption: string;
   imageUrl: string;
   likesCount: number;
@@ -23,6 +25,8 @@ function mapPost(p: GQLPost): Post {
   return {
     post_id: p.postId,
     user_id: p.userId,
+    username: p.username,
+    avatar: p.avatar,
     caption: p.caption,
     image_url: p.imageUrl,
     likes_count: p.likesCount,
@@ -45,7 +49,7 @@ export async function fetchUserPosts(userId: string): Promise<Post[]> {
   const data = await gql<{ userPosts: GQLPost[] }>(
     `query UserPosts($userId: String!) {
       userPosts(userId: $userId) {
-        postId userId caption imageUrl likesCount createdAt isLiked
+        postId userId username avatar caption imageUrl likesCount createdAt isLiked
       }
     }`,
     { userId }

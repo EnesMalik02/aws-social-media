@@ -13,8 +13,6 @@ import CommentModal from "./CommentModal";
 interface Props {
   post: Post;
   currentUserId: string;
-  username?: string;
-  avatar?: string;
 }
 
 function HeartIcon({ filled }: { filled: boolean }) {
@@ -78,12 +76,11 @@ function timeAgo(dateStr: string): string {
 interface DetailProps {
   post: Post;
   currentUserId: string;
-  username?: string;
-  avatar?: string;
   onClose: () => void;
 }
 
-function PostDetailModal({ post, currentUserId, username, avatar, onClose }: DetailProps) {
+function PostDetailModal({ post, currentUserId, onClose }: DetailProps) {
+  const { username, avatar } = post;
   const isLiked = post.is_liked;
   const toggleLike = useToggleLikeMutation();
   const deletePost = useDeletePostMutation(currentUserId);
@@ -243,7 +240,8 @@ function PostDetailModal({ post, currentUserId, username, avatar, onClose }: Det
   );
 }
 
-export default function FeedPostCard({ post, currentUserId, username, avatar }: Props) {
+export default function FeedPostCard({ post, currentUserId }: Props) {
+  const { username, avatar } = post;
   const isLiked = post.is_liked;
   const toggleLike = useToggleLikeMutation();
   const [showDetail, setShowDetail] = useState(false);
@@ -349,8 +347,6 @@ export default function FeedPostCard({ post, currentUserId, username, avatar }: 
           <PostDetailModal
             post={post}
             currentUserId={currentUserId}
-            username={username}
-            avatar={avatar}
             onClose={() => setShowDetail(false)}
           />
         )}

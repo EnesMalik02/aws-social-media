@@ -5,6 +5,8 @@ import type { UserProfile } from "../model/types";
 interface GQLPost {
   postId: string;
   userId: string;
+  username: string;
+  avatar: string;
   caption: string;
   imageUrl: string;
   likesCount: number;
@@ -28,6 +30,8 @@ function mapPost(p: GQLPost): Post {
   return {
     post_id: p.postId,
     user_id: p.userId,
+    username: p.username,
+    avatar: p.avatar,
     caption: p.caption,
     image_url: p.imageUrl,
     likes_count: p.likesCount,
@@ -40,7 +44,7 @@ const USER_PROFILE_FIELDS = `
   userId username bio avatar
   followersCount followingCount
   isOwner isFollowing
-  posts { postId userId caption imageUrl likesCount createdAt isLiked }
+  posts { postId userId username avatar caption imageUrl likesCount createdAt isLiked }
 `;
 
 export async function fetchUserProfileByUsername(

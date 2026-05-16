@@ -90,7 +90,6 @@ export default function ProfilePage() {
         <PostsSection
           posts={profile.posts}
           currentUserId={user?.user_id ?? ""}
-          ownerUsername={profile.username}
         />
       </main>
 
