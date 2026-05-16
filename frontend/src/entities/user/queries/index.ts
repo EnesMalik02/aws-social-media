@@ -1,6 +1,7 @@
-import { useQuery } from "@tanstack/react-query";
-import { fetchMe } from "../api/rest";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { fetchMe, followUser, unfollowUser } from "../api/rest";
 import { fetchUserProfileByUsername } from "../api/graphql";
+import type { UserProfile } from "../model/types";
 
 export const userKeys = {
   me: ["user", "me"] as const,
@@ -22,5 +23,35 @@ export function useUserProfile(username: string) {
     queryFn: () => fetchUserProfileByUsername(username),
     enabled: !!username,
     staleTime: 2 * 60 * 1000,
+  });
+}
+
+export function useFollow(username: string) {
+  const qc = useQueryClient();
+  const key = userKeys.profile(username);
+
+  return useMutation({
+    mutationFn: ({ userId, isFollowing }: { userId: string; isFollowing: boolean }) =>
+      isFollowing ? unfollowUser(userId) : followUser(userId),
+    onMutate: async ({ isFollowing }) => {
+      await qc.cancelQueries({ queryKey: key });
+      const prev = qc.getQueryData<UserProfile>(key);
+      qc.setQueryData<UserProfile>(key, (old) =>
+        old
+          ? {
+              ...old,
+              isFollowing: !isFollowing,
+              followersCount: old.followersCount + (isFollowing ? -1 : 1),
+            }
+          : old
+      );
+      return { prev };
+    },
+    onError: (_err, _vars, ctx) => {
+      if (ctx?.prev) qc.setQueryData(key, ctx.prev);
+    },
+    onSettled: () => {
+      qc.invalidateQueries({ queryKey: key });
+    },
   });
 }
