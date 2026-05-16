@@ -1,11 +1,13 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { fetchMe, followUser, unfollowUser } from "../api/rest";
+import { fetchMe, followUser, unfollowUser, fetchFollowers, fetchFollowing } from "../api/rest";
 import { fetchUserProfileByUsername } from "../api/graphql";
 import type { UserProfile } from "../model/types";
 
 export const userKeys = {
   me: ["user", "me"] as const,
   profile: (username: string) => ["user", "profile", username] as const,
+  followers: (userId: string) => ["user", "followers", userId] as const,
+  following: (userId: string) => ["user", "following", userId] as const,
 };
 
 export function useMe(enabled = true) {
@@ -23,6 +25,24 @@ export function useUserProfile(username: string) {
     queryFn: () => fetchUserProfileByUsername(username),
     enabled: !!username,
     staleTime: 2 * 60 * 1000,
+  });
+}
+
+export function useFollowers(userId: string, enabled = false) {
+  return useQuery({
+    queryKey: userKeys.followers(userId),
+    queryFn: () => fetchFollowers(userId),
+    enabled: !!userId && enabled,
+    staleTime: 60 * 1000,
+  });
+}
+
+export function useFollowing(userId: string, enabled = false) {
+  return useQuery({
+    queryKey: userKeys.following(userId),
+    queryFn: () => fetchFollowing(userId),
+    enabled: !!userId && enabled,
+    staleTime: 60 * 1000,
   });
 }
 
