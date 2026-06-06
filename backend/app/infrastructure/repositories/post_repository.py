@@ -14,6 +14,7 @@ class PostRepository:
 
         post_item = {
             **Keys.post(post_id),
+            **Keys.discover_index(created_at),
             "post_id":     post_id,
             "user_id":     user_id,
             "caption":     caption,
@@ -149,6 +150,27 @@ class PostRepository:
 
         self.table.put_item(Item=item)
         return clean(item)
+
+    def get_discover_posts(
+        self,
+        limit: int = 20,
+        last_evaluated_key: dict | None = None,
+    ) -> dict:
+        kwargs = {
+            "IndexName": "GSI3",
+            "KeyConditionExpression": Key("GSI3PK").eq("POSTS"),
+            "ScanIndexForward": False,
+            "Limit": limit,
+        }
+        if last_evaluated_key:
+            kwargs["ExclusiveStartKey"] = last_evaluated_key
+
+        response = self.table.query(**kwargs)
+        return {
+            "items":              [clean(item) for item in response.get("Items", [])],
+            "last_evaluated_key": response.get("LastEvaluatedKey"),
+            "has_more":           "LastEvaluatedKey" in response,
+        }
 
     def get_comments(self, post_id: str, limit: int = 50) -> list[dict]:
         response = self.table.query(

@@ -45,8 +45,9 @@ function ExploreIcon({ active }: { active: boolean }) {
 
 export default function Navbar({ username }: Props) {
   const pathname = usePathname();
-  const isFeed = pathname === "/feed";
-  const isProfile = username ? pathname === `/${username}` : false;
+  const isFeed     = pathname === "/feed";
+  const isDiscover = pathname === "/discover";
+  const isProfile  = username ? pathname === `/${username}` : false;
 
   return (
     <>
@@ -79,11 +80,17 @@ export default function Navbar({ username }: Props) {
           </Link>
 
           <Link
-            href="#"
-            className="flex items-center gap-3.5 px-3 py-3 rounded-xl transition-all duration-150 font-medium text-[15px] text-[#8C7B6E] hover:bg-[#EDE3D8] hover:text-[#1A1208]"
+            href="/discover"
+            className={`flex items-center gap-3.5 px-3 py-3 rounded-xl transition-all duration-150 font-medium text-[15px] ${
+              isDiscover
+                ? "bg-[#FF5500]/10 text-[#FF5500]"
+                : "text-[#8C7B6E] hover:bg-[#EDE3D8] hover:text-[#1A1208]"
+            }`}
+            aria-current={isDiscover ? "page" : undefined}
           >
-            <ExploreIcon active={false} />
+            <ExploreIcon active={isDiscover} />
             <span>Explore</span>
+            {isDiscover && <span className="ml-auto w-1.5 h-1.5 rounded-full bg-[#FF5500]" />}
           </Link>
 
           <Link
@@ -135,7 +142,7 @@ export default function Navbar({ username }: Props) {
         role="navigation"
         aria-label="Main navigation"
       >
-        <div className="flex items-center h-16 px-8 max-w-lg mx-auto">
+        <div className="flex items-center h-16 px-4 max-w-lg mx-auto">
           {/* Home */}
           <Link
             href="/feed"
@@ -149,11 +156,24 @@ export default function Navbar({ username }: Props) {
             <span className="text-[10px] font-semibold tracking-wide">Home</span>
           </Link>
 
+          {/* Explore */}
+          <Link
+            href="/discover"
+            className={`flex-1 flex flex-col items-center gap-1 transition-colors ${
+              isDiscover ? "text-[#FF5500]" : "text-[#C4B5A5] hover:text-[#8C7B6E]"
+            }`}
+            aria-label="Discover"
+            aria-current={isDiscover ? "page" : undefined}
+          >
+            <ExploreIcon active={isDiscover} />
+            <span className="text-[10px] font-semibold tracking-wide">Explore</span>
+          </Link>
+
           {/* Create */}
           <div className="flex-1 flex justify-center">
             <Link
               href="/create"
-              className="w-12 h-12 rounded-2xl bg-[#FF5500] text-white flex items-center justify-center shadow-md shadow-[#FF5500]/30 hover:bg-[#e64d00] active:scale-95 transition-all"
+              className="w-11 h-11 rounded-2xl bg-[#FF5500] text-white flex items-center justify-center shadow-md shadow-[#FF5500]/30 hover:bg-[#e64d00] active:scale-95 transition-all"
               aria-label="Create new post"
             >
               <PlusIcon />

@@ -77,3 +77,13 @@ class Keys:
             "PK": f"USER#{following_id}",
             "SK": f"FOLLOWER#{follower_id}",
         }
+
+    # ── Discover ──────────────────────────────────────────────────────
+
+    @staticmethod
+    def discover_index(created_at: str) -> dict:
+        """GSI3 key — all posts sorted by creation date."""
+        return {
+            "GSI3PK": "POSTS",
+            "GSI3SK": created_at,
+        }

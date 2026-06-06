@@ -89,6 +89,59 @@ export async function fetchFeed(cursor?: string): Promise<FeedResponse> {
   };
 }
 
+export interface DiscoverResponse {
+  posts: Post[];
+  nextCursor: string | null;
+  hasMore: boolean;
+}
+
+interface GQLDiscoverPost {
+  postId:          string;
+  userId:          string;
+  caption:         string;
+  imageUrl:        string;
+  likesCount:      number;
+  createdAt:       string;
+  authorUsername:  string;
+  authorAvatar:    string;
+}
+
+interface GQLDiscoverResponse {
+  discover: {
+    posts:       GQLDiscoverPost[];
+    nextCursor:  string | null;
+    hasMore:     boolean;
+  };
+}
+
+export async function fetchDiscover(cursor?: string): Promise<DiscoverResponse> {
+  const data = await gql<GQLDiscoverResponse>(
+    `query Discover($cursor: String) {
+      discover(cursor: $cursor) {
+        posts { postId userId caption imageUrl likesCount createdAt authorUsername authorAvatar }
+        nextCursor
+        hasMore
+      }
+    }`,
+    { cursor: cursor ?? null }
+  );
+  return {
+    posts: data.discover.posts.map((p) => ({
+      post_id:     p.postId,
+      user_id:     p.userId,
+      username:    p.authorUsername,
+      avatar:      p.authorAvatar,
+      caption:     p.caption,
+      image_url:   p.imageUrl,
+      likes_count: p.likesCount,
+      created_at:  p.createdAt,
+      is_liked:    false,
+    })),
+    nextCursor: data.discover.nextCursor,
+    hasMore:    data.discover.hasMore,
+  };
+}
+
 export async function fetchPostComments(postId: string): Promise<Comment[]> {
   const data = await gql<{ postComments: GQLComment[] }>(
     `query PostComments($postId: String!) {

@@ -3,10 +3,10 @@ from strawberry.fastapi import GraphQLRouter
 from strawberry.tools import merge_types
 from fastapi import Request
 
-from app.graphql.queries import UserQuery, PostQuery, FeedQuery
+from app.graphql.queries import UserQuery, PostQuery, FeedQuery, DiscoverQuery
 from app.graphql.mutations import UserMutation
 
-Query    = merge_types("Query",    (UserQuery, PostQuery, FeedQuery))
+Query    = merge_types("Query",    (UserQuery, PostQuery, FeedQuery, DiscoverQuery))
 Mutation = merge_types("Mutation", (UserMutation,))
 
 schema = strawberry.Schema(query=Query, mutation=Mutation)
