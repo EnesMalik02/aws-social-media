@@ -50,12 +50,13 @@ const USER_PROFILE_FIELDS = `
 export async function fetchUserProfileByUsername(
   username: string
 ): Promise<UserProfile> {
-  const data = await gql<{ userProfileByUsername: GQLUserProfile }>(
+  const data = await gql<{ userProfileByUsername: GQLUserProfile | null }>(
     `query UserProfileByUsername($username: String!) {
       userProfileByUsername(username: $username) { ${USER_PROFILE_FIELDS} }
     }`,
     { username }
   );
   const p = data.userProfileByUsername;
+  if (!p) throw new Error("User not found");
   return { ...p, posts: p.posts.map(mapPost) };
 }

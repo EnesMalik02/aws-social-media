@@ -44,6 +44,16 @@ class UserRepository:
         return clean(items[0]) if items else None
 
     def update_user(self, user_id: str, fields: dict) -> dict | None:
+        fields = dict(fields)
+        # Keep the username GSI in sync — renaming the username field alone
+        # would otherwise leave GSI1PK pointing at the old name.
+        if "username" in fields:
+            fields["username"] = fields["username"].lower()
+            fields["GSI1PK"]   = f"USERNAME#{fields['username']}"
+        if "email" in fields:
+            fields["email"]  = fields["email"].lower()
+            fields["GSI2PK"] = f"EMAIL#{fields['email']}"
+
         update_expr = "SET " + ", ".join(f"#{k} = :{k}" for k in fields)
         attr_names  = {f"#{k}": k for k in fields}
         attr_values = {f":{k}": v for k, v in fields.items()}

@@ -1,9 +1,10 @@
+from typing import Optional
+
 import strawberry
 from strawberry.types import Info
 from fastapi import HTTPException
 
 from app.graphql.types.user import UserType, UserProfileType
-from app.graphql.types.post import PostType
 from app.graphql.queries.post import _build_post_type
 
 
@@ -50,15 +51,15 @@ def _build_user_profile(info: Info, user: dict) -> UserProfileType:
     )
 
 
-def resolve_user_profile_by_username(info: Info, username: str) -> UserProfileType:
+def resolve_user_profile_by_username(info: Info, username: str) -> Optional[UserProfileType]:
     user_repo = info.context["user_repo"]
     user = user_repo.get_user_by_username(username)
     if not user:
-        raise HTTPException(status_code=404, detail="User not found")
+        return None
     return _build_user_profile(info, user)
 
 
 @strawberry.type
 class UserQuery:
     me: UserType = strawberry.field(resolver=resolve_me)
-    user_profile_by_username: UserProfileType = strawberry.field(resolver=resolve_user_profile_by_username)
+    user_profile_by_username: Optional[UserProfileType] = strawberry.field(resolver=resolve_user_profile_by_username)
