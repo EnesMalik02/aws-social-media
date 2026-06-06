@@ -18,8 +18,6 @@ app.include_router(v1_router, prefix="/v1")
 app.include_router(get_graphql_router(), prefix="/graphql")
 
 
-
-
 @app.get("/health")
 async def health():
     return {"status": "ok"}
