@@ -13,6 +13,7 @@ metadata:
     # Health check endpoint
     alb.ingress.kubernetes.io/healthcheck-path: /health
 spec:
+  ingressClassName: alb
   rules:
     - http:
         paths:
