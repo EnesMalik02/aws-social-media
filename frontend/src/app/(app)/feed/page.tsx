@@ -4,7 +4,7 @@ import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuthStore } from "@/entities/user/store/authStore";
-import { useUserPosts } from "@/entities/post/queries";
+import { useFeed } from "@/entities/post/queries";
 import FeedPostCard from "@/components/FeedPostCard";
 import Navbar from "@/components/Navbar";
 
@@ -31,9 +31,9 @@ function SkeletonCard() {
 export default function FeedPage() {
   const router = useRouter();
   const { user, loading: authLoading, fetchMe } = useAuthStore();
-  const { data: posts = [], isLoading: postsLoading } = useUserPosts(
-    user?.user_id
-  );
+  const { data: feedData, isLoading: feedLoading } = useFeed();
+
+  const posts = feedData?.posts ?? [];
 
   useEffect(() => {
     const token = localStorage.getItem("access_token");
@@ -55,7 +55,7 @@ export default function FeedPage() {
   return (
     <div className="min-h-dvh bg-[#F5EDE0] lg:pl-60">
       <main className="max-w-xl mx-auto pt-4 pb-28 lg:pb-8">
-        {postsLoading ? (
+        {feedLoading ? (
           <div className="space-y-0">
             {[0, 1, 2].map((i) => (
               <SkeletonCard key={i} />
@@ -76,15 +76,9 @@ export default function FeedPage() {
               </svg>
             </div>
             <div className="text-center">
-              <p className="font-semibold text-[#1A1208]">No posts yet</p>
-              <p className="text-sm text-[#8C7B6E] mt-1">Share your first moment</p>
+              <p className="font-semibold text-[#1A1208]">Henüz Bir Post Yok</p>
+              <p className="text-sm text-[#8C7B6E] mt-1">Takip ettiğin kişilerin postları burada görünecek</p>
             </div>
-            <button
-              onClick={() => router.push("/create")}
-              className="mt-2 px-6 py-2.5 rounded-xl bg-[#FF5500] text-white text-sm font-semibold hover:bg-[#e64d00] transition-colors cursor-pointer"
-            >
-              Create post
-            </button>
           </motion.div>
         ) : (
           <AnimatePresence mode="popLayout">

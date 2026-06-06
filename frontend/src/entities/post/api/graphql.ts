@@ -57,6 +57,38 @@ export async function fetchUserPosts(userId: string): Promise<Post[]> {
   return data.userPosts.map(mapPost);
 }
 
+export interface FeedResponse {
+  posts: Post[];
+  nextCursor: string | null;
+  hasMore: boolean;
+}
+
+interface GQLFeedResponse {
+  feed: {
+    posts: GQLPost[];
+    nextCursor: string | null;
+    hasMore: boolean;
+  };
+}
+
+export async function fetchFeed(cursor?: string): Promise<FeedResponse> {
+  const data = await gql<GQLFeedResponse>(
+    `query Feed($cursor: String) {
+      feed(cursor: $cursor) {
+        posts { postId userId username avatar caption imageUrl likesCount createdAt isLiked }
+        nextCursor
+        hasMore
+      }
+    }`,
+    { cursor: cursor ?? null }
+  );
+  return {
+    posts: data.feed.posts.map(mapPost),
+    nextCursor: data.feed.nextCursor,
+    hasMore: data.feed.hasMore,
+  };
+}
+
 export async function fetchPostComments(postId: string): Promise<Comment[]> {
   const data = await gql<{ postComments: GQLComment[] }>(
     `query PostComments($postId: String!) {

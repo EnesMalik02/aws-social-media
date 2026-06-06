@@ -3,7 +3,8 @@ import {
   useMutation,
   useQueryClient,
 } from "@tanstack/react-query";
-import { fetchUserPosts, fetchPostComments } from "../api/graphql";
+import { fetchUserPosts, fetchPostComments, fetchFeed } from "../api/graphql";
+import type { FeedResponse } from "../api/graphql";
 import {
   getUploadUrl,
   uploadToS3,
@@ -18,7 +19,16 @@ import type { Post } from "../model/types";
 export const postKeys = {
   byUser: (userId: string) => ["posts", "user", userId] as const,
   comments: (postId: string) => ["posts", "comments", postId] as const,
+  feed: () => ["posts", "feed"] as const,
 };
+
+export function useFeed() {
+  return useQuery<FeedResponse>({
+    queryKey: postKeys.feed(),
+    queryFn: () => fetchFeed(),
+    staleTime: 60 * 1000,
+  });
+}
 
 export function useUserPosts(userId: string | undefined) {
   return useQuery({

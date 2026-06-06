@@ -67,6 +67,24 @@ class PostRepository:
         items.sort(key=lambda x: x.get("created_at", ""), reverse=True)
         return [clean(item) for item in items]
 
+    def get_user_posts_page(self, user_id: str, limit: int = 21, cursor: str | None = None) -> list[dict]:
+        if cursor:
+            key_condition = (
+                Key("PK").eq(f"USER#{user_id}") &
+                Key("SK").between("POST#", f"POST#{cursor}")
+            )
+        else:
+            key_condition = (
+                Key("PK").eq(f"USER#{user_id}") &
+                Key("SK").begins_with("POST#")
+            )
+        response = self.table.query(
+            KeyConditionExpression=key_condition,
+            ScanIndexForward=False,
+            Limit=limit,
+        )
+        return [clean(item) for item in response.get("Items", [])]
+
     def delete_post(self, post_id: str, user_id: str, created_at: str) -> None:
         self.table.meta.client.transact_write_items(
             TransactItems=[
