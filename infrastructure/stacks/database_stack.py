@@ -29,3 +29,14 @@ class DatabaseStack(Stack):
             partition_key=dynamodb.Attribute(name="GSI2PK", type=dynamodb.AttributeType.STRING),
             sort_key=dynamodb.Attribute(name="GSI2SK", type=dynamodb.AttributeType.STRING),
         )
+        self.table.add_global_secondary_index(
+            index_name="GSI3",
+            partition_key=dynamodb.Attribute(
+                name="GSI3PK",
+                type=dynamodb.AttributeType.STRING
+            ),
+            sort_key=dynamodb.Attribute(
+                name="GSI3SK",
+                type=dynamodb.AttributeType.STRING
+            ),
+        )
