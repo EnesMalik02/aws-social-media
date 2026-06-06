@@ -3,6 +3,7 @@ from stacks.database_stack import DatabaseStack
 from stacks.storage_stack import StorageStack
 from stacks.compute_stack import ComputeStack
 from stacks.messaging_stack import MessagingStack
+from stacks.eks_stack import EksStack
 
 app = cdk.App()
 
@@ -21,5 +22,7 @@ compute_stack = ComputeStack(
     messaging_stack=msg_stack,
     env=env
 )
+eks_stack = EksStack(app, "PixoraEks", env=env)
+
 
 app.synth()
