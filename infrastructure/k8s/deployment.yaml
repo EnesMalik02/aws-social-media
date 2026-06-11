@@ -1,46 +1,52 @@
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: pixora-backend
-  namespace: default
-spec:
-  replicas: 1                    # kaç pod çalışsın
-  selector:
-    matchLabels:
-      app: pixora-backend
-  template:
-    metadata:
-      labels:
-        app: pixora-backend
-    spec:
-      containers:
-        - name: pixora-backend
-          image: 675715936315.dkr.ecr.eu-central-1.amazonaws.com/pixora-backend:latest
-          ports:
-            - containerPort: 8000
-          env:
-            - name: AWS_REGION
-              value: "eu-central-1"
-            - name: DYNAMODB_TABLE
-              value: "pixora-main"
-            - name: S3_BUCKET
-              value: "pixora-media-675715936315"
-          resources:
-            requests:
-              cpu: "256m"        # 0.25 vCPU
-              memory: "512Mi"
-            limits:
-              cpu: "512m"
-              memory: "1Gi"
-          livenessProbe:         # container çalışıyor mu?
-            httpGet:
-              path: /health
-              port: 8000
-            initialDelaySeconds: 30
-            periodSeconds: 10
-          readinessProbe:        # traffic alabiliyor mu?
-            httpGet:
-              path: /health
-              port: 8000
-            initialDelaySeconds: 10
-            periodSeconds: 5
+# =============================================================================
+# EKS DEPLOYMENT — DISABLED
+# Switched to Fargate. Kept as reference only.
+# To re-enable: uncomment EksStack in app.py and restore EKS step in deploy.yml.
+# =============================================================================
+
+# apiVersion: apps/v1
+# kind: Deployment
+# metadata:
+#   name: pixora-backend
+#   namespace: default
+# spec:
+#   replicas: 1                    # number of pods to run
+#   selector:
+#     matchLabels:
+#       app: pixora-backend
+#   template:
+#     metadata:
+#       labels:
+#         app: pixora-backend
+#     spec:
+#       containers:
+#         - name: pixora-backend
+#           image: 675715936315.dkr.ecr.eu-central-1.amazonaws.com/pixora-backend:latest
+#           ports:
+#             - containerPort: 8000
+#           env:
+#             - name: AWS_REGION
+#               value: "eu-central-1"
+#             - name: DYNAMODB_TABLE
+#               value: "pixora-main"
+#             - name: S3_BUCKET
+#               value: "pixora-media-675715936315"
+#           resources:
+#             requests:
+#               cpu: "256m"        # 0.25 vCPU (unchanged)
+#               memory: "512Mi"
+#             limits:
+#               cpu: "512m"
+#               memory: "1Gi"
+#           livenessProbe:         # is container alive?
+#             httpGet:
+#               path: /health
+#               port: 8000
+#             initialDelaySeconds: 30
+#             periodSeconds: 10
+#           readinessProbe:        # is container ready to receive traffic?
+#             httpGet:
+#               path: /health
+#               port: 8000
+#             initialDelaySeconds: 10
+#             periodSeconds: 5

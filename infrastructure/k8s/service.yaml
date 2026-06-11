@@ -1,13 +1,18 @@
-apiVersion: v1
-kind: Service
-metadata:
-  name: pixora-backend-service
-  namespace: default
-spec:
-  selector:
-    app: pixora-backend          # deployment ile eşleşir
-  ports:
-    - protocol: TCP
-      port: 80                   # dışarıya açılan port
-      targetPort: 8000           # container'ın portu
-  type: ClusterIP                # sadece cluster içinden erişilir
+# =============================================================================
+# EKS SERVICE — DISABLED
+# Switched to Fargate. Kept as reference only.
+# =============================================================================
+
+# apiVersion: v1
+# kind: Service
+# metadata:
+#   name: pixora-backend-service
+#   namespace: default
+# spec:
+#   selector:
+#     app: pixora-backend          # matches deployment selector
+#   ports:
+#     - protocol: TCP
+#       port: 80                   # external port
+#       targetPort: 8000           # container port
+#   type: ClusterIP                # accessible only within cluster

@@ -10,7 +10,8 @@ on:
 env:
   AWS_REGION: eu-central-1
   ECR_REPOSITORY: pixora-backend
-  EKS_CLUSTER: pixora-eks
+  ECS_CLUSTER: pixora-cluster
+  ECS_SERVICE: pixora-backend-service
 
 jobs:
   deploy:
@@ -34,9 +35,6 @@ jobs:
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2
 
-      # Build for linux/amd64 (required for EKS nodes, not Mac ARM)
-      # Tag with commit SHA for traceability and latest for convenience
-      # Push both tags to ECR
       - name: Build and push image
         id: build
         env:
@@ -49,15 +47,13 @@ jobs:
             ./backend
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:latest
-          echo "image=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" >> $GITHUB_OUTPUT
 
-      # Configure kubectl to talk to our EKS cluster
-      # Update the deployment with the new image (commit SHA tag)
-      # Wait until rollout completes before marking the job as successful
-      - name: Deploy to EKS
-        env:
-          IMAGE: ${{ steps.build.outputs.image }}
+      - name: Deploy to ECS Fargate
         run: |
-          aws eks update-kubeconfig --region $AWS_REGION --name $EKS_CLUSTER
-          kubectl set image deployment/pixora-backend pixora-backend=$IMAGE
-          kubectl rollout status deployment/pixora-backend --timeout=120s
+          aws ecs update-service \
+            --cluster $ECS_CLUSTER \
+            --service $ECS_SERVICE \
+            --force-new-deployment
+          aws ecs wait services-stable \
+            --cluster $ECS_CLUSTER \
+            --services $ECS_SERVICE
