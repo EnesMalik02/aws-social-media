@@ -26,7 +26,7 @@ def client(mock_service):
 
 class TestGetUploadUrl:
     def test_rejects_unsupported_content_type(self, client):
-        # TODO: GET /api/v1/posts/upload-url?filename=x.txt&content_type=text/plain -> 400
+        # TODO: GET /v1/posts/upload-url?filename=x.txt&content_type=text/plain -> 400
         # (see ALLOWED_IMAGE_TYPES check in the route, this is validated in the route not the service)
         pass
 
@@ -41,7 +41,7 @@ class TestCreatePost:
 
 class TestGetPost:
     def test_public_no_auth_required(self, client, mock_service):
-        # TODO: GET /api/v1/posts/{id} has no get_current_user dependency - should work
+        # TODO: GET /v1/posts/{id} has no get_current_user dependency - should work
         # even without overriding auth. Verify unauthenticated access succeeds.
         pass
 

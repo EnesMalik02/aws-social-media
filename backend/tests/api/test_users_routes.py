@@ -27,7 +27,7 @@ class TestFollowRoute:
     def test_returns_200(self, client):
         # TODO: with patch("app.api.v1.routes.users.follow_service") as mock_fs:
         #     mock_fs.follow.return_value = <FollowStatusResponse-shaped dict>
-        #     POST /api/v1/users/{id}/follow, assert 200 + mock_fs.follow called with (test-user-id, id)
+        #     POST /v1/users/{id}/follow, assert 200 + mock_fs.follow called with (test-user-id, id)
         pass
 
 

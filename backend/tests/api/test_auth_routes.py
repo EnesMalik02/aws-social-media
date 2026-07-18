@@ -9,9 +9,11 @@
 import pytest
 from unittest.mock import MagicMock
 from fastapi.testclient import TestClient
+from fastapi import HTTPException
 
 from app.main import app
 from app.modules.auth.dependencies import get_auth_service
+from app.modules.auth.schemas import LoginResponse, RegisterResponse, UserResponse, TokenResponse
 
 
 @pytest.fixture
@@ -28,28 +30,61 @@ def client(mock_service):
 
 class TestRegisterRoute:
     def test_valid_body_returns_201(self, client, mock_service):
-        # TODO: mock_service.register.return_value = <a RegisterResponse-shaped object/dict>
-        # POST /api/v1/auth/register with a valid body, assert response.status_code == 201
-        pass
+        mock_service.register.return_value = RegisterResponse(
+            user=UserResponse(user_id="u1", username="enes", email="test@test.com"),
+            token=TokenResponse(access_token="access", refresh_token="refresh"),
+        )
+
+        response = client.post("/v1/auth/register", json={
+            "username": "enes",
+            "email": "test@test.com",
+            "password": "Test1234",
+        })
+
+        assert response.status_code == 201
+        assert response.json()["user"]["username"] == "enes"
+        mock_service.register.assert_called_once()
 
     def test_invalid_body_returns_422(self, client):
-        # TODO: POST with missing "email" field -> FastAPI/pydantic validation error, 422
-        pass
+        response = client.post("/v1/auth/register", json={
+            "username": "enes",
+            "password": "Test1234",
+        })
+
+        assert response.status_code == 422
 
 
 class TestLoginRoute:
     def test_valid_credentials_returns_200(self, client, mock_service):
-        pass
+        mock_service.login.return_value = LoginResponse(
+            user=UserResponse(user_id="u1", username="enes", email="test@test.com"),
+            token=TokenResponse(access_token="access", refresh_token="refresh"),
+        )
+
+        response = client.post("/v1/auth/login", json={
+            "email": "test@test.com",
+            "password": "Test1234",
+        })
+
+        assert response.status_code == 200
+        assert response.json()["user"]["username"] == "enes"
+        mock_service.login.assert_called_once()
 
     def test_service_raises_401_propagates(self, client, mock_service):
-        # TODO: mock_service.login.side_effect = HTTPException(status_code=401, detail="...")
-        # assert the route surfaces the same 401 to the client
-        pass
+        mock_service.login.side_effect = HTTPException(status_code=401, detail="Invalid email or password")
+        
+        response = client.post("/v1/auth/login", json={
+            "email": "test@test.co",
+            "password": "Test1234",
+        })
+
+        assert response.status_code == 401
+        assert response.json()["detail"] == "Invalid email or password"
 
 
 class TestMeRoute:
     def test_requires_bearer_token(self, client):
-        # TODO: GET /api/v1/auth/me with no Authorization header -> 401/403 (HTTPBearer rejects it)
+        # TODO: GET /v1/auth/me with no Authorization header -> 401/403 (HTTPBearer rejects it)
         pass
 
     def test_valid_token_returns_user(self, client, mock_service):
